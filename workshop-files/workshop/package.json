@@ -1,0 +1,21 @@
+{
+  "name": "ai-agents-workshop",
+  "version": "1.0.0",
+  "description": "Воркшоп: ИИ агенты с нуля — Google ADK + Kitana SDK",
+  "type": "module",
+  "scripts": {
+    "check": "npx tsx scripts/check-env.ts"
+  },
+  "dependencies": {
+    "@google/adk":          "latest",
+    "@google/genai":        "latest",
+    "@kitana-sdk/core":     "latest",
+    "zod":                  "^3.23.0",
+    "dotenv":               "^16.0.0"
+  },
+  "devDependencies": {
+    "tsx":          "^4.0.0",
+    "@types/node":  "^22.0.0",
+    "typescript":   "^5.0.0"
+  }
+}

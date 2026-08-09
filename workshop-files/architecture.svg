@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" viewBox="0 0 720 710" font-family="system-ui, sans-serif" font-size="12">
+<style>
+  .label { font-size: 11px; fill: #888; }
+  .title { font-size: 13px; font-weight: 600; fill: #1a1a1a; }
+  .sub   { font-size: 11px; fill: #555; }
+  .gray  { fill: #f5f4f0; stroke: #ccc; }
+  .teal  { fill: #e8f5f0; stroke: #0F6E56; }
+  .purple{ fill: #ede8f5; stroke: #534AB7; }
+  .amber { fill: #fef3e2; stroke: #BA7517; }
+</style>
+
+<!-- ИСТОЧНИКИ -->
+<text x="360" y="18" text-anchor="middle" class="label">источники данных</text>
+<rect x="20"  y="24" width="130" height="36" rx="6" class="gray" stroke-width="0.5"/>
+<text x="85"  y="46" text-anchor="middle" class="title">Telegram</text>
+<rect x="164" y="24" width="120" height="36" rx="6" class="gray" stroke-width="0.5"/>
+<text x="224" y="46" text-anchor="middle" class="title">YouTube</text>
+<rect x="298" y="24" width="120" height="36" rx="6" class="gray" stroke-width="0.5"/>
+<text x="358" y="46" text-anchor="middle" class="title">Reddit</text>
+<rect x="432" y="24" width="140" height="36" rx="6" class="gray" stroke-width="0.5"/>
+<text x="502" y="46" text-anchor="middle" class="title">Instagram</text>
+
+<line x1="85"  y1="60" x2="85"  y2="88" stroke="#aaa" stroke-width="1" marker-end="url(#a)"/>
+<line x1="224" y1="60" x2="224" y2="88" stroke="#aaa" stroke-width="1" marker-end="url(#a)"/>
+<line x1="358" y1="60" x2="358" y2="88" stroke="#aaa" stroke-width="1" marker-end="url(#a)"/>
+<line x1="502" y1="60" x2="502" y2="88" stroke="#aaa" stroke-width="1" marker-end="url(#a)"/>
+<defs>
+  <marker id="a" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+    <path d="M1 1L6 4L1 7" fill="none" stroke="#aaa" stroke-width="1.2"/>
+  </marker>
+  <marker id="b" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+    <path d="M1 1L6 4L1 7" fill="none" stroke="#0F6E56" stroke-width="1.2"/>
+  </marker>
+  <marker id="c" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+    <path d="M1 1L6 4L1 7" fill="none" stroke="#534AB7" stroke-width="1.2"/>
+  </marker>
+  <marker id="d" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+    <path d="M1 1L6 4L1 7" fill="none" stroke="#BA7517" stroke-width="1.2"/>
+  </marker>
+</defs>
+
+<!-- GOOGLE ADK -->
+<text x="360" y="84" text-anchor="middle" class="label">google adk — оркестратор</text>
+<rect x="10" y="92" width="680" height="192" rx="12" fill="none" stroke="#1A73E8" stroke-width="0.8" stroke-dasharray="5 3"/>
+<text x="28" y="110" class="label" fill="#1A73E8">@google/adk</text>
+
+<!-- ADK агенты -->
+<rect x="24" y="116" width="196" height="52" rx="8" class="teal" stroke-width="0.5"/>
+<text x="122" y="137" text-anchor="middle" class="title">SequentialAgent</text>
+<text x="122" y="155" text-anchor="middle" class="sub">парсер → аналитик → копир.</text>
+
+<line x1="220" y1="142" x2="244" y2="142" stroke="#0F6E56" stroke-width="1" marker-end="url(#b)"/>
+
+<rect x="244" y="116" width="196" height="52" rx="8" class="teal" stroke-width="0.5"/>
+<text x="342" y="137" text-anchor="middle" class="title">Model Routing</text>
+<text x="342" y="155" text-anchor="middle" class="sub">выбор модели в рантайме</text>
+
+<line x1="440" y1="142" x2="464" y2="142" stroke="#0F6E56" stroke-width="1" marker-end="url(#b)"/>
+
+<rect x="464" y="116" width="210" height="52" rx="8" class="teal" stroke-width="0.5"/>
+<text x="569" y="137" text-anchor="middle" class="title">State / Memory</text>
+<text x="569" y="155" text-anchor="middle" class="sub">сессии, стейт агентов</text>
+
+<!-- ADK провайдеры -->
+<text x="360" y="188" text-anchor="middle" class="label">встроенные провайдеры (через API ключи)</text>
+<rect x="24"  y="196" width="148" height="34" rx="6" class="teal" stroke-width="0.5"/>
+<text x="98"  y="217" text-anchor="middle" class="title">Claude API</text>
+<rect x="186" y="196" width="148" height="34" rx="6" class="teal" stroke-width="0.5"/>
+<text x="260" y="217" text-anchor="middle" class="title">Gemini API</text>
+<rect x="348" y="196" width="148" height="34" rx="6" class="teal" stroke-width="0.5"/>
+<text x="422" y="217" text-anchor="middle" class="title">Ollama/LiteLLM</text>
+<rect x="510" y="196" width="164" height="34" rx="6" class="teal" stroke-width="0.5"/>
+<text x="592" y="217" text-anchor="middle" class="title">LiteLLM...</text>
+
+<!-- разделитель -->
+<line x1="360" y1="288" x2="360" y2="318" stroke="#aaa" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#a)"/>
+<rect x="260" y="295" width="200" height="22" rx="4" fill="#fff8e8" stroke="#ccc" stroke-width="0.5"/>
+<text x="360" y="310" text-anchor="middle" class="label">нет API ключа → Kitana</text>
+
+<!-- KITANA -->
+<text x="360" y="334" text-anchor="middle" class="label">kitana sdk — cli без api ключей</text>
+<rect x="10" y="342" width="680" height="186" rx="12" fill="none" stroke="#534AB7" stroke-width="0.8" stroke-dasharray="5 3"/>
+<text x="28" y="360" class="label" fill="#534AB7">@kitana-sdk/core</text>
+
+<!-- Kitana модули верхний ряд -->
+<rect x="24"  y="366" width="148" height="56" rx="8" class="purple" stroke-width="0.5"/>
+<text x="98"  y="388" text-anchor="middle" class="title">detector.ts</text>
+<text x="98"  y="406" text-anchor="middle" class="sub">сканирует окружение</text>
+
+<line x1="172" y1="394" x2="196" y2="394" stroke="#534AB7" stroke-width="1" marker-end="url(#c)"/>
+
+<rect x="196" y="366" width="148" height="56" rx="8" class="purple" stroke-width="0.5"/>
+<text x="270" y="388" text-anchor="middle" class="title">runner.ts</text>
+<text x="270" y="406" text-anchor="middle" class="sub">spawnSync → CLI</text>
+
+<line x1="344" y1="394" x2="368" y2="394" stroke="#534AB7" stroke-width="1" marker-end="url(#c)"/>
+
+<rect x="368" y="366" width="148" height="56" rx="8" class="purple" stroke-width="0.5"/>
+<text x="442" y="388" text-anchor="middle" class="title">failover.ts</text>
+<text x="442" y="406" text-anchor="middle" class="sub">цепочка провайдеров</text>
+
+<!-- Kitana модули нижний ряд -->
+<rect x="24"  y="438" width="225" height="56" rx="8" class="amber" stroke-width="0.5"/>
+<text x="136" y="460" text-anchor="middle" class="title">bible.ts + .kitana/</text>
+<text x="136" y="478" text-anchor="middle" class="sub">живое состояние проекта</text>
+
+<line x1="249" y1="466" x2="275" y2="466" stroke="#BA7517" stroke-width="1" marker-end="url(#d)"/>
+
+<rect x="275" y="438" width="241" height="56" rx="8" class="amber" stroke-width="0.5"/>
+<text x="395" y="460" text-anchor="middle" class="title">compressor.ts</text>
+<text x="395" y="478" text-anchor="middle" class="sub">dense format при переключении</text>
+
+<!-- стрелки к CLI -->
+<line x1="148" y1="528" x2="108" y2="558" stroke="#534AB7" stroke-width="1" marker-end="url(#c)"/>
+<line x1="300" y1="528" x2="300" y2="558" stroke="#534AB7" stroke-width="1" marker-end="url(#c)"/>
+<line x1="442" y1="528" x2="480" y2="558" stroke="#534AB7" stroke-width="1" marker-end="url(#c)"/>
+
+<!-- CLI провайдеры -->
+<text x="360" y="552" text-anchor="middle" class="label">локальные cli — без api ключей</text>
+<rect x="24"  y="560" width="168" height="46" rx="6" class="purple" stroke-width="0.5"/>
+<text x="108" y="578" text-anchor="middle" class="title">claude</text>
+<text x="108" y="595" text-anchor="middle" class="sub">claude -p "..."</text>
+<rect x="216" y="560" width="168" height="46" rx="6" class="purple" stroke-width="0.5"/>
+<text x="300" y="578" text-anchor="middle" class="title">ollama</text>
+<text x="300" y="595" text-anchor="middle" class="sub">ollama run llama3.2</text>
+<rect x="408" y="560" width="168" height="46" rx="6" class="purple" stroke-width="0.5"/>
+<text x="492" y="578" text-anchor="middle" class="title">gemini</text>
+<text x="492" y="595" text-anchor="middle" class="sub">gemini -p "..."</text>
+
+<!-- легенда -->
+<rect x="20" y="626" width="16" height="10" rx="2" fill="none" stroke="#1A73E8" stroke-dasharray="4 2" stroke-width="0.8"/>
+<text x="42" y="635" class="label">Google ADK — оркестрация + API провайдеры</text>
+<rect x="20" y="648" width="16" height="10" rx="2" fill="none" stroke="#534AB7" stroke-dasharray="4 2" stroke-width="0.8"/>
+<text x="42" y="657" class="label">Kitana SDK — CLI без ключей + Библия проекта</text>
+</svg>
