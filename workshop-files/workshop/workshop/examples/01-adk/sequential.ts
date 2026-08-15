@@ -2,9 +2,8 @@
  * Скелет: 1.3 — SequentialAgent
  * Задание: examples/../tasks/01-adk.md
  */
-import { LlmAgent, SequentialAgent } from "@google/adk/agents";
-import { Runner } from "@google/adk/runners";
-import { InMemorySessionService } from "@google/adk/sessions";
+import { LlmAgent, SequentialAgent, Runner, InMemorySessionService } from "@google/adk";
+import { basename } from "node:path";
 
 const topic = process.argv[2] ?? "квантовые компьютеры";
 
@@ -12,7 +11,7 @@ const topic = process.argv[2] ?? "квантовые компьютеры";
 // instruction: получает тему, возвращает ТОЛЬКО JSON { facts: string[] }
 const researcher = new LlmAgent({
   name: "researcher",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO
 });
 
@@ -20,19 +19,20 @@ const researcher = new LlmAgent({
 // instruction: получает JSON с фактами, переписывает в один абзац
 const editor = new LlmAgent({
   name: "editor",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO
 });
 
+// export — обязательно для `npx adk run <файл>` и `npx adk web`, см. hello-agent.ts
 // TODO: оберни в SequentialAgent
-const pipeline = new SequentialAgent({
+export const agent = new SequentialAgent({
   name: "research-pipeline",
   subAgents: [], // TODO: [researcher, editor]
 });
 
 async function main() {
   const sessionService = new InMemorySessionService();
-  const runner = new Runner({ agent: pipeline, appName: "workshop", sessionService });
+  const runner = new Runner({ agent, appName: "workshop", sessionService });
   const session = await sessionService.createSession({ appName: "workshop", userId: "user" });
 
   console.log(`\n📚 Тема: ${topic}\n`);
@@ -50,4 +50,8 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+// main() — не при загрузке через adk run/web, см. hello-agent.ts
+const isRunViaAdkCli = Boolean(process.argv[1]) && basename(process.argv[1]!) === "adk";
+if (!isRunViaAdkCli) {
+  main().catch(console.error);
+}

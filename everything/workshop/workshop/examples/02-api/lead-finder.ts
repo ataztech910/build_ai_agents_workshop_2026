@@ -34,7 +34,7 @@ const ICP = `
 // { top_leads: [{ author, username, score, reason, key_quote }] }
 const analyst = new LlmAgent({
   name: "analyst",
-  model: "claude-sonnet-4-5", // или gemini-2.0-flash
+  model: "claude-sonnet-4-5", // или gemini-flash-latest
   instruction: "", // TODO
 });
 

@@ -2,11 +2,9 @@
  * Скелет: 1.2 — FunctionTool
  * Задание: examples/../tasks/01-adk.md
  */
-import { LlmAgent } from "@google/adk/agents";
-import { FunctionTool } from "@google/adk/tools";
-import { Runner } from "@google/adk/runners";
-import { InMemorySessionService } from "@google/adk/sessions";
+import { LlmAgent, FunctionTool, Runner, InMemorySessionService } from "@google/adk";
 import { z } from "zod";
+import { basename } from "node:path";
 
 // TODO: создай инструмент получения погоды
 const weatherTool = new FunctionTool({
@@ -21,10 +19,11 @@ const weatherTool = new FunctionTool({
   },
 });
 
+// export — обязательно для `npx adk run <файл>` и `npx adk web`, см. hello-agent.ts
 // TODO: создай агента с weatherTool
-const agent = new LlmAgent({
+export const agent = new LlmAgent({
   name: "weather",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO
   tools: [], // TODO: добавь weatherTool
 });
@@ -38,4 +37,8 @@ async function main() {
   // не забудь показать в логах когда вызвался инструмент
 }
 
-main().catch(console.error);
+// main() — не при загрузке через adk run/web, см. hello-agent.ts
+const isRunViaAdkCli = Boolean(process.argv[1]) && basename(process.argv[1]!) === "adk";
+if (!isRunViaAdkCli) {
+  main().catch(console.error);
+}

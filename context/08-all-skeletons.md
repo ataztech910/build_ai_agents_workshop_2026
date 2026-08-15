@@ -12,7 +12,7 @@ import { Content } from "@google/genai";
 
 const agent = new LlmAgent({
   name: "hello",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO: напиши инструкцию на русском
 });
 
@@ -52,7 +52,7 @@ const weatherTool = new FunctionTool({
 
 const agent = new LlmAgent({
   name: "weather",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO
   tools: [], // TODO: [weatherTool]
 });
@@ -79,13 +79,13 @@ const topic = process.argv[2] ?? "квантовые компьютеры";
 
 const researcher = new LlmAgent({
   name: "researcher",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO: получает тему, возвращает JSON { facts: string[] }
 });
 
 const editor = new LlmAgent({
   name: "editor",
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   instruction: "", // TODO: получает факты, переписывает в один абзац
 });
 

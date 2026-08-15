@@ -291,7 +291,7 @@ COMMENTS_LIMIT=100
 
 # Вариант B: Gemini Flash (бесплатно, 15 rpm)
 # GOOGLE_API_KEY=AIza...
-# MODEL=gemini-2.0-flash
+# MODEL=gemini-flash-latest
 
 # Вариант C: Ollama (офлайн)
 # OPENAI_BASE_URL=http://localhost:11434/v1

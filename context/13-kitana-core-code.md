@@ -117,7 +117,7 @@ export class KitanaDetector {
         name:      "gemini",
         version:   version.match(/[\d.]+/)?.[0] ?? version,
         authorized,
-        models:    ["gemini-2.0-flash"],
+        models:    ["gemini-flash-latest"],
         available: true,
       };
     } catch {

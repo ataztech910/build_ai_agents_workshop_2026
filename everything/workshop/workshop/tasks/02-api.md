@@ -39,7 +39,7 @@ ANTHROPIC_API_KEY=sk-ant-... npx tsx src/05-claude-agent.ts
 **Шаги:**
 
 1. Создай файл `src/06-gemini-agent.ts`
-2. Используй `"gemini-2.0-flash"` — быстрый и бесплатный
+2. Используй `"gemini-flash-latest"` — быстрый и бесплатный
 3. Подключи Google Search как встроенный инструмент ADK
 4. Спроси о чём-то актуальном — агент должен реально поискать
 
@@ -68,7 +68,7 @@ GOOGLE_API_KEY=AIza... npx tsx src/06-gemini-agent.ts
 ```bash
 npx tsx src/07-routing.ts
 # → [router] claude failed: invalid API key
-# → [router] switching to gemini-2.0-flash
+# → [router] switching to gemini-flash-latest
 # → [gemini] "Вот мой ответ..."
 ```
 

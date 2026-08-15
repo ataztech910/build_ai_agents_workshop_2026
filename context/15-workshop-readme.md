@@ -46,7 +46,7 @@ MODEL=auto
 Получи ключ: aistudio.google.com → Get API Key
 
 GOOGLE_API_KEY=AIza...
-MODEL=gemini-2.0-flash
+MODEL=gemini-flash-latest
 
 ⚠️ Лимит: 15 req/min. Если 429 — подожди 10 сек.
 

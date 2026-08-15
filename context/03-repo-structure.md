@@ -161,7 +161,7 @@ Zero зависимостей для детекции — только Node.js b
 # aistudio.google.com → Get API Key
 # ⚠️ Лимит: 15 req/min. Если 429 — подожди 10 сек
 # GOOGLE_API_KEY=AIza...
-# MODEL=gemini-2.0-flash
+# MODEL=gemini-flash-latest
 
 # Вариант C: Ollama (офлайн)
 # ollama pull llama3.2

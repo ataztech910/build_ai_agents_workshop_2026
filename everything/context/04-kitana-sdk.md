@@ -94,7 +94,7 @@ const checks = {
   gemini: {
     version: 'gemini --version',
     auth:    'gemini auth status',
-    models:  ['gemini-2.0-flash']
+    models:  ['gemini-flash-latest']
   }
 }
 ```

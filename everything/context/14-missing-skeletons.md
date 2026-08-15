@@ -19,13 +19,13 @@ import { InMemorySessionService } from "@google/adk/sessions";
 // TODO: два независимых агента-исследователя на разные темы
 const researcherA = new LlmAgent({
   name:        "researcher-a",
-  model:       "gemini-2.0-flash",
+  model:       "gemini-flash-latest",
   instruction: "", // TODO: исследует тему А, возвращает 3 факта
 });
 
 const researcherB = new LlmAgent({
   name:        "researcher-b",
-  model:       "gemini-2.0-flash",
+  model:       "gemini-flash-latest",
   instruction: "", // TODO: исследует тему Б, возвращает 3 факта
 });
 
@@ -112,7 +112,7 @@ async function main() {
     }
   }
 
-  // TODO: запусти тот же вопрос на gemini-2.0-flash и сравни ответы
+  // TODO: запусти тот же вопрос на gemini-flash-latest и сравни ответы
   // В чём разница? Что лучше для этой задачи?
   console.log("\n\n💡 Попробуй тот же вопрос на Gemini и сравни качество ответа");
 }
@@ -144,7 +144,7 @@ import { InMemorySessionService } from "@google/adk/sessions";
 // TODO: создай агента с Google Search инструментом
 const agent = new LlmAgent({
   name:        "gemini-searcher",
-  model:       "gemini-2.0-flash",
+  model:       "gemini-flash-latest",
   instruction: "", // TODO: агент который ищет актуальную информацию и цитирует источники
   tools:       [], // TODO: [new GoogleSearch()]
 });
