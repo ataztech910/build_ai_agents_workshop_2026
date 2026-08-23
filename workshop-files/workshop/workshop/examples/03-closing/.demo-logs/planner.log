@@ -1,0 +1,10 @@
+
++-----------------------------------------------------------------------------+
+| ADK API Server started                                                      |
+|                                                                             |
+| For local testing, access at http://localhost:8001.                         |
++-----------------------------------------------------------------------------+
+[32mINFO[39m: [ADK API Server] 2026-08-22T14:38:28.228Z GET /list-apps
+[32mINFO[39m: [ADK API Server] 2026-08-22T14:38:32.144Z GET /list-apps
+[32mINFO[39m: [ADK API Server] 2026-08-22T14:38:50.797Z POST /apps/planner/users/u1/sessions/s1
+[32mINFO[39m: [ADK API Server] 2026-08-22T14:38:50.837Z POST /run

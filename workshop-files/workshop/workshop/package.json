@@ -9,8 +9,8 @@
   "dependencies": {
     "@google/adk": "latest",
     "@google/genai": "latest",
-    "@kitana-sdk/adk": "^0.1.4",
-    "@kitana-sdk/core": "latest",
+    "@kitana-sdk/adk": "^0.1.7",
+    "@kitana-sdk/core": "^0.1.8",
     "dotenv": "^16.0.0",
     "zod": "^4.2.1"
   },
