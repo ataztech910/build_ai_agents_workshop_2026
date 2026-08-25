@@ -47,8 +47,19 @@ async function main() {
   const runner = new Runner({ agent, appName: "workshop", sessionService });
   const session = await sessionService.createSession({ appName: "workshop", userId: "user" });
 
-  // TODO: run with a weather question and print the answer
-  // don't forget to log when the tool actually gets called
+  // Same loop shape as hello-agent.ts — reuse it here.
+  // TODO: replace the empty string with a weather question
+  for await (const event of runner.runAsync({
+    userId: "user",
+    sessionId: session.id,
+    newMessage: { role: "user", parts: [{ text: "" }] }, // TODO: ask about the weather
+  })) {
+    if (event.content?.parts?.[0]?.text) {
+      process.stdout.write(event.content.parts[0].text + "\n");
+    } else if (event.errorMessage) {
+      console.error(`❌ [${event.errorCode ?? "ERROR"}] ${event.errorMessage}`);
+    }
+  }
 }
 
 // main() does not run when loaded via adk run/web, see hello-agent.ts

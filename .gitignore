@@ -2,3 +2,5 @@
 .env
 **/.env
 *.tgz
+answer.txt
+leads_result.json
