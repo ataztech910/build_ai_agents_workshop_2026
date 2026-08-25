@@ -4,7 +4,8 @@
   "description": "Воркшоп: ИИ агенты с нуля — Google ADK + Kitana SDK",
   "type": "module",
   "scripts": {
-    "check": "npx tsx scripts/check-env.ts"
+    "check": "npx tsx scripts/check-env.ts",
+    "check-kitana": "npx tsx examples/check-kitana.ts"
   },
   "dependencies": {
     "@google/adk": "latest",
