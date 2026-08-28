@@ -9,3 +9,8 @@ leads_result.json
 .telegram_session
 instagram_session.json
 leads_*.json
+
+# Internal prep/planning notes — not for the public repo
+/context/
+/prep/
+/tmp-kitana/
