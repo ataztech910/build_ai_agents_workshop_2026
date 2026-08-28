@@ -1,98 +1,106 @@
-# Lead Finder v3 — Воркшоп по ИИ агентам
+# Lead Finder v3 — AI Agents Workshop
 
-Четыре источника, один пайплайн. Меняешь `SOURCE=` в `.env` — всё остальное работает одинаково.
+Four sources, one pipeline. Change `SOURCE=` in `.env` — everything else works the same.
 
-## Источники
+## Sources
 
-| SOURCE | Библиотека | Что нужно | Сложность |
+| SOURCE | Library | What you need | Difficulty |
 |---|---|---|---|
-| `telegram` | gramjs (MTProto) | API ID + Hash на [my.telegram.org](https://my.telegram.org) | ⭐ |
-| `youtube` | YouTube Data API v3 | API Key на [console.cloud.google.com](https://console.cloud.google.com) | ⭐ |
-| `reddit` | snoowrap | App credentials на [reddit.com/prefs/apps](https://reddit.com/prefs/apps) | ⭐⭐ |
-| `instagram` | Playwright + stealth | Логин/пароль аккаунта Instagram | ⭐⭐ |
+| `telegram` | gramjs (MTProto) | API ID + Hash at [my.telegram.org](https://my.telegram.org) | ⭐ |
+| `youtube` | YouTube Data API v3 | API Key at [console.cloud.google.com](https://console.cloud.google.com) | ⭐ |
+| `reddit` | snoowrap | App credentials at [reddit.com/prefs/apps](https://reddit.com/prefs/apps) | ⭐⭐ |
+| `instagram` | Playwright + stealth | Instagram account login/password | ⭐⭐ |
 
-> Twitter/X убран — платный с февраля 2026 (~$100/мес).
+> Twitter/X removed — paid since February 2026 (~$100/mo).
+>
+> **Instagram is not recommended for the workshop.** Telegram/YouTube/Reddit are official APIs.
+> Instagram isn't an official API — logging in with your own password + intercepting GraphQL +
+> `puppeteer-extra-plugin-stealth` to dodge anti-bot detection — this violates Instagram's
+> terms of service. The code works and stays in the repo, but we don't demo it on stage or
+> present it as a recommended option.
 
 ---
 
-## Быстрый старт
+## Quick start
 
 ```bash
-# 1. Зависимости
+# 1. Dependencies
 npm install
-npm run install-browsers   # скачивает Chromium для Playwright
+npm run install-browsers   # downloads Chromium for Playwright
 
-# 2. Claude Code (токены с подписки, не с API)
+# 2. Claude Code (subscription tokens, not the API)
 npm install -g @anthropic-ai/claude-code
 claude login
 
-# 3. Конфиг
+# 3. Config
 cp .env.example .env
-# Выбери SOURCE= и заполни нужный блок
+# Pick a SOURCE= and fill in that block
 
-# 4. Запуск
+# 4. Run
 npm start
 
-# Только парсер (без Claude):
+# Parser only (no Claude):
 npm run parse-only
 ```
 
 ---
 
-## Как работает Instagram парсер
+## How the Instagram parser works
 
-Playwright открывает реальный Chromium, логинится в Instagram и перехватывает GraphQL-запросы пока скроллит комментарии.
+> ⚠️ See the warning above — not recommended for the workshop, violates Instagram's ToS.
+
+Playwright opens a real Chromium browser, logs into Instagram, and intercepts GraphQL requests while scrolling through comments.
 
 ```
 Playwright (Chromium + stealth)
-  → логин → instagram.com/p/POST/
-  → скролл комментариев
-  → перехват GraphQL /graphql/query → извлекаем JSON
-  → собираем Comment[]
+  → login → instagram.com/p/POST/
+  → scroll comments
+  → intercept GraphQL /graphql/query → extract JSON
+  → build Comment[]
 ```
 
-**Первый запуск** — Playwright попросит подождать пока он логинится. Сессия сохраняется в `instagram_session.json`, повторный вход не нужен.
+**First run** — Playwright will ask you to wait while it logs in. The session is saved to `instagram_session.json`, no need to log in again.
 
-**Если есть 2FA** — запусти с `IG_HEADLESS=false` в `.env`, откроется видимый браузер, введи код вручную.
+**If you have 2FA** — run with `IG_HEADLESS=false` in `.env`, a visible browser opens, enter the code manually.
 
-**Stealth** — `playwright-extra` + `puppeteer-extra-plugin-stealth` маскируют браузер под обычного пользователя. Без stealth Instagram быстро блокирует headless Chromium.
+**Stealth** — `playwright-extra` + `puppeteer-extra-plugin-stealth` disguise the browser as a regular user. Without stealth, Instagram blocks headless Chromium quickly.
 
 ---
 
-## Структура проекта
+## Project structure
 
 ```
-pipeline.ts              — оркестратор (аналитик + копирайтер)
+pipeline.ts              — orchestrator (analyst + copywriter)
 parsers/
-  index.ts               — роутер по SOURCE=
-  types.ts               — единый формат Comment / ParseResult
+  index.ts               — router based on SOURCE=
+  types.ts               — shared Comment / ParseResult format
   youtube.ts             — YouTube Data API v3
   reddit.ts              — snoowrap
-  instagram.ts           — Playwright + GraphQL перехват
+  instagram.ts           — Playwright + GraphQL interception
 telegram-parser.ts       — gramjs (Telegram)
-.env.example             — шаблон конфига
-instagram_session.json   — сессия Instagram (не коммить!)
-.telegram_session        — сессия Telegram (не коммить!)
+.env.example             — config template
+instagram_session.json   — Instagram session (don't commit!)
+.telegram_session        — Telegram session (don't commit!)
 ```
 
 ---
 
-## Задания для воркшопа
+## Workshop tasks
 
-**1 — Смени источник**
-Поменяй `SOURCE=` в `.env`. Сравни качество лидов — где аудитория "горячее"?
+**1 — Switch source**
+Change `SOURCE=` in `.env`. Compare lead quality — which audience is "hotter"?
 
-**2 — Настрой ICP**
-В `pipeline.ts` найди константу `ICP` и опиши своего реального клиента.
+**2 — Set the ICP**
+In `pipeline.ts` find the `ICP` constant and describe your real customer.
 
-**3 — Смени тон**
-`OFFER_TONE=экспертный` или `OFFER_TONE=прямой`.
+**3 — Change the tone**
+`OFFER_TONE=expert` or `OFFER_TONE=direct`.
 
-**4 — Добавь валидатора**
-После копирайтера добавь `stepValidate()` — он отклоняет шаблонные офферы.
+**4 — Add a validator**
+After the copywriter, add `stepValidate()` — it rejects templated offers.
 
-**5 — Параллельный анализ**
-Замени последовательный `stepAnalyze()` на `Promise.all()` по комментариям.
+**5 — Parallel analysis**
+Replace the sequential `stepAnalyze()` with `Promise.all()` over the comments.
 
 ---
 

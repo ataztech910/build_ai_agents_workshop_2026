@@ -13,7 +13,7 @@ config({ path: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "
 
 const modelEnv = process.env.MODEL;
 const model =
-  modelEnv === "kitana" ? new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }) : modelEnv || "gemini-flash-latest";
+  modelEnv === "kitana" ? new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }) : modelEnv || "gemini-3.6-flash";
 
 const weatherTool = new FunctionTool({
   name: "getWeather",

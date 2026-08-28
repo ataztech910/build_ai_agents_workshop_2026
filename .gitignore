@@ -5,3 +5,7 @@
 answer.txt
 data.txt
 leads_result.json
+.demo-logs/
+.telegram_session
+instagram_session.json
+leads_*.json

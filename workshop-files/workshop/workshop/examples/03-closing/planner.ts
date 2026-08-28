@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 config({ path: join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".env") });
 
 function pickModel() {
-  // return "gemini-flash-latest"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
+  // return "gemini-3.6-flash"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
   return new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }); // Kitana — no API key, uses your Claude CLI subscription or Ollama
 }
 

@@ -1,6 +1,6 @@
 /**
  * parsers/index.ts
- * Роутер — выбирает парсер по SOURCE= в .env
+ * Router — picks a parser based on SOURCE= in .env
  *
  * SOURCE= telegram | youtube | reddit | instagram
  */
@@ -12,7 +12,7 @@ export type { ParseResult, Comment } from "./types.js";
 
 export async function runParser(): Promise<ParseResult> {
   const source = (process.env.SOURCE ?? "telegram").toLowerCase();
-  console.log(`\n🔌 Источник: ${source.toUpperCase()}`);
+  console.log(`\n🔌 Source: ${source.toUpperCase()}`);
 
   switch (source) {
 
@@ -28,7 +28,22 @@ export async function runParser(): Promise<ParseResult> {
           commentsPerPost: Number(process.env.COMMENTS_PER_POST ?? "20"),
         }
       );
-      return { ...result, platform: "telegram" };
+      // telegram-parser.ts has its own ParseResult/Comment shape
+      // (channelTitle/totalPosts, comments missing sourceUrl/platform) —
+      // map it into the shared shape every other parser and pipeline.ts
+      // actually use.
+      return {
+        platform: "telegram",
+        source: result.source,
+        title: result.channelTitle,
+        totalComments: result.comments.length,
+        comments: result.comments.map((c) => ({
+          ...c,
+          sourceUrl: result.source,
+          platform: "telegram" as const,
+        })),
+        parsedAt: result.parsedAt,
+      };
     }
 
     // ── YouTube ───────────────────────────────────────────────────────────
@@ -73,24 +88,24 @@ export async function runParser(): Promise<ParseResult> {
 
     default:
       throw new Error(
-        `Неизвестный SOURCE="${source}". ` +
-        `Допустимые: telegram, youtube, reddit, instagram`
+        `Unknown SOURCE="${source}". ` +
+        `Allowed: telegram, youtube, reddit, instagram`
       );
   }
 }
 
 function requireEnv(key: string): string {
   const val = process.env[key];
-  if (!val) throw new Error(`Не задана переменная: ${key}`);
+  if (!val) throw new Error(`Missing env var: ${key}`);
   return val;
 }
 
-// Тест парсера напрямую: npx tsx parsers/index.ts
+// Test the parser directly: npx tsx parsers/index.ts
 if (process.argv[1]?.endsWith("index.ts")) {
   runParser()
     .then((r) => {
-      console.log(`\n📊 ${r.totalComments} комментариев из "${r.title}"`);
-      r.comments.slice(0, 3).forEach((c) => {
+      console.log(`\n📊 ${r.totalComments} comments from "${r.title}"`);
+      r.comments.forEach((c) => {
         console.log(`  [${c.platform}] ${c.username ?? c.author}: ${c.text.slice(0, 80)}`);
       });
     })

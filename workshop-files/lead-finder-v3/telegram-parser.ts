@@ -1,16 +1,16 @@
 /**
  * telegram-parser.ts
- * Парсер Telegram канала через gramjs (MTProto — не Bot API)
+ * Parses a Telegram channel via gramjs (MTProto — not the Bot API)
  *
- * Что умеет:
- *   - Читать посты из публичного канала
- *   - Читать комментарии к постам (discussion группа)
- *   - Сохранять сессию чтобы не логиниться каждый раз
+ * What it does:
+ *   - Reads posts from a public channel
+ *   - Reads comments on posts (discussion group)
+ *   - Saves the session so you don't have to log in every time
  *
- * Получить API_ID и API_HASH:
- *   1. Зайди на https://my.telegram.org
- *   2. Раздел "API development tools"
- *   3. Создай приложение — получишь api_id и api_hash
+ * Get API_ID and API_HASH:
+ *   1. Go to https://my.telegram.org
+ *   2. "API development tools" section
+ *   3. Create an app — you'll get api_id and api_hash
  */
 
 import { TelegramClient, Api } from "telegram";
@@ -18,7 +18,7 @@ import { StringSession } from "telegram/sessions/index.js";
 import * as readline from "node:readline";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
-// ─── Типы ─────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Comment {
   author: string;
@@ -38,11 +38,11 @@ export interface ParseResult {
   parsedAt: string;
 }
 
-// ─── Конфиг ───────────────────────────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────────────────────
 
 const SESSION_FILE = ".telegram_session";
 
-// ─── Авторизация ──────────────────────────────────────────────────────────────
+// ─── Authorization ────────────────────────────────────────────────────────────
 
 async function getInput(prompt: string): Promise<string> {
   const rl = readline.createInterface({
@@ -58,11 +58,11 @@ async function getInput(prompt: string): Promise<string> {
 }
 
 async function createClient(apiId: number, apiHash: string): Promise<TelegramClient> {
-  // Грузим сохранённую сессию если есть
+  // Load a saved session if one exists
   let sessionString = "";
   if (existsSync(SESSION_FILE)) {
     sessionString = readFileSync(SESSION_FILE, "utf-8").trim();
-    console.log("📂 Найдена сохранённая сессия");
+    console.log("📂 Found a saved session");
   }
 
   const session = new StringSession(sessionString);
@@ -71,34 +71,34 @@ async function createClient(apiId: number, apiHash: string): Promise<TelegramCli
   });
 
   await client.start({
-    phoneNumber: async () => getInput("📱 Номер телефона (+7...): "),
-    password: async () => getInput("🔑 Пароль 2FA (если есть): "),
-    phoneCode: async () => getInput("💬 Код из Telegram: "),
-    onError: (err) => console.error("Ошибка авторизации:", err),
+    phoneNumber: async () => getInput("📱 Phone number (international format, e.g. +43...): "),
+    password: async () => getInput("🔑 2FA password (if enabled): "),
+    phoneCode: async () => getInput("💬 Code from Telegram: "),
+    onError: (err) => console.error("Auth error:", err),
   });
 
-  // Сохраняем сессию — больше не нужно логиниться
+  // Save the session — no need to log in again after this
   const savedSession = client.session.save() as unknown as string;
   writeFileSync(SESSION_FILE, savedSession);
-  console.log("✅ Сессия сохранена в", SESSION_FILE);
+  console.log("✅ Session saved to", SESSION_FILE);
 
   return client;
 }
 
-// ─── Парсинг канала ───────────────────────────────────────────────────────────
+// ─── Channel parsing ──────────────────────────────────────────────────────────
 
 export async function parseChannel(
   channelUsername: string,
   apiId: number,
   apiHash: string,
   options: {
-    postsLimit?: number;      // сколько последних постов смотреть
-    commentsPerPost?: number; // сколько комментариев с каждого поста
+    postsLimit?: number;      // how many recent posts to look at
+    commentsPerPost?: number; // how many comments per post
   } = {}
 ): Promise<ParseResult> {
   const { postsLimit = 10, commentsPerPost = 20 } = options;
 
-  // Убираем @ и https://t.me/ если передали полную ссылку
+  // Strip @ and https://t.me/ if a full link was passed in
   const username = channelUsername
     .replace("https://t.me/", "")
     .replace("@", "")
@@ -106,33 +106,33 @@ export async function parseChannel(
 
   const client = await createClient(apiId, apiHash);
 
-  console.log(`\n🔍 Подключаемся к каналу @${username}...`);
+  console.log(`\n🔍 Connecting to channel @${username}...`);
 
   try {
-    // Получаем информацию о канале
+    // Fetch the channel's info
     const entity = await client.getEntity(username);
     const channelTitle =
       "title" in entity ? (entity.title as string) : username;
 
-    console.log(`📢 Канал: ${channelTitle}`);
-    console.log(`📋 Забираем последние ${postsLimit} постов...\n`);
+    console.log(`📢 Channel: ${channelTitle}`);
+    console.log(`📋 Fetching the latest ${postsLimit} posts...\n`);
 
     const allComments: Comment[] = [];
 
-    // Итерируемся по постам канала
+    // Iterate over the channel's posts
     let postCount = 0;
     for await (const post of client.iterMessages(entity, {
       limit: postsLimit,
     })) {
-      if (!post.message) continue; // пропускаем посты без текста
+      if (!post.message) continue; // skip posts with no text
       postCount++;
 
       const preview = post.message.slice(0, 60).replace(/\n/g, " ");
-      process.stdout.write(`  📄 Пост #${post.id}: "${preview}..." → `);
+      process.stdout.write(`  📄 Post #${post.id}: "${preview}..." → `);
 
       try {
-        // Получаем комментарии к посту
-        // replyTo: post.id — это комментарии именно к этому посту
+        // Fetch the post's comments
+        // replyTo: post.id — comments specifically on this post
         let commentCount = 0;
         for await (const comment of client.iterMessages(entity, {
           replyTo: post.id,
@@ -140,7 +140,7 @@ export async function parseChannel(
         })) {
           if (!comment.message || !comment.senderId) continue;
 
-          // Получаем отправителя
+          // Get the sender
           const sender = comment.sender;
           let authorName = "Unknown";
           let username_: string | null = null;
@@ -169,10 +169,10 @@ export async function parseChannel(
           commentCount++;
         }
 
-        console.log(`${commentCount} комментариев`);
+        console.log(`${commentCount} comments`);
       } catch {
-        // Комментарии могут быть отключены на посте
-        console.log("комментарии недоступны");
+        // Comments may be disabled on this post
+        console.log("comments unavailable");
       }
     }
 
@@ -186,7 +186,7 @@ export async function parseChannel(
       parsedAt: new Date().toISOString(),
     };
 
-    console.log(`\n✅ Готово! Собрано ${allComments.length} комментариев`);
+    console.log(`\n✅ Done! Collected ${allComments.length} comments`);
     return result;
 
   } catch (err) {
@@ -195,17 +195,17 @@ export async function parseChannel(
   }
 }
 
-// ─── Запуск напрямую (тест) ───────────────────────────────────────────────────
+// ─── Run directly (test) ───────────────────────────────────────────────────
 
-// Запуск: npx tsx telegram-parser.ts
+// Run: npx tsx telegram-parser.ts
 if (process.argv[1]?.endsWith("telegram-parser.ts")) {
   const API_ID = Number(process.env.TG_API_ID);
   const API_HASH = process.env.TG_API_HASH ?? "";
-  const CHANNEL = process.env.TG_CHANNEL ?? "durov"; // дефолт для теста
+  const CHANNEL = process.env.TG_CHANNEL ?? "durov"; // default for testing
 
   if (!API_ID || !API_HASH) {
-    console.error("❌ Нужны переменные: TG_API_ID и TG_API_HASH");
-    console.error("   Получи на https://my.telegram.org");
+    console.error("❌ Required env vars: TG_API_ID and TG_API_HASH");
+    console.error("   Get them at https://my.telegram.org");
     process.exit(1);
   }
 
@@ -214,7 +214,7 @@ if (process.argv[1]?.endsWith("telegram-parser.ts")) {
     commentsPerPost: 10,
   })
     .then((result) => {
-      console.log("\n📊 Пример первых 3 комментариев:");
+      console.log("\n📊 First 3 comments as an example:");
       result.comments.slice(0, 3).forEach((c) => {
         console.log(`  @${c.username ?? c.author}: ${c.text.slice(0, 100)}`);
       });

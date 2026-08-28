@@ -14,7 +14,7 @@ const topic = process.argv[2] ?? "quantum computers";
 
 const modelEnv = process.env.MODEL;
 function pickModel() {
-  return modelEnv === "kitana" ? new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }) : modelEnv || "gemini-flash-latest";
+  return modelEnv === "kitana" ? new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }) : modelEnv || "gemini-3.6-flash";
 }
 
 const researcher = new LlmAgent({

@@ -22,7 +22,7 @@ function stripCodeFence(text: string): string {
 // Pick a model — uncomment ONE of the two return statements below. Each
 // sub-agent calls pickModel() separately and gets its own instance.
 function pickModel() {
-  return "gemini-flash-latest"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
+  return "gemini-3.6-flash"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
   // return new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }); // Kitana — no API key, uses your Claude CLI subscription or Ollama
 }
 
@@ -146,20 +146,31 @@ async function main() {
   let hadError = false;
 
   // TODO: run the pipeline, print each agent's output as it completes
-  for await (const event of runner.runAsync({
-    userId: "user",
-    sessionId: session.id,
-    newMessage: { role: "user", parts: [{ text: prompt }] },
-  })) {
-    if (event.content?.parts?.[0]?.text) {
-      const text = event.content.parts[0].text;
-      console.log(`\n[${event.author}]`, text.slice(0, 100), "...");
-      finalResult = text;
-      lastAuthor = event.author ?? "";
-    } else if (event.errorMessage) {
-      hadError = true;
-      console.error(`❌ [${event.errorCode ?? "ERROR"}] ${event.errorMessage}`);
+  try {
+    for await (const event of runner.runAsync({
+      userId: "user",
+      sessionId: session.id,
+      newMessage: { role: "user", parts: [{ text: prompt }] },
+    })) {
+      if (event.content?.parts?.[0]?.text) {
+        const text = event.content.parts[0].text;
+        console.log(`\n[${event.author}]`, text.slice(0, 100), "...");
+        finalResult = text;
+        lastAuthor = event.author ?? "";
+      } else if (event.errorMessage) {
+        hadError = true;
+        console.error(`❌ [${event.errorCode ?? "ERROR"}] ${event.errorMessage}`);
+      }
     }
+  } catch (err) {
+    // A failed agent doesn't always surface as an errorMessage event — a
+    // provider outage on analyst, for example, leaves session.state.topLeads
+    // unset, and copywriter's {topLeads} placeholder throws a real exception
+    // when the next agent tries to resolve it. Without this catch, that
+    // exception would escape as a raw stack trace instead of the same clear
+    // "pipeline did not complete" message below.
+    hadError = true;
+    console.error(`\n❌ Pipeline crashed: ${err instanceof Error ? err.message : err}`);
   }
 
   // Only the validator's output counts as final — if the pipeline errored

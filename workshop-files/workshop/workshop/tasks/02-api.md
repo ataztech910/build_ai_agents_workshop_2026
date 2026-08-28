@@ -19,9 +19,19 @@
 - раскомментируй вариант с `fetch(DATA_PORTAL_URL + ...)` — тянешь реальные
   данные с учебного портала (`workshop-data-portal.vercel.app`), без логина
   и ключей, тот же формат ответа, что вернул бы настоящий парсер
-- для настоящей соцсети — `lead-finder-v3/telegram-parser.ts`'s
-  `parseChannel()` (нужен свой `TG_API_ID`/`TG_API_HASH` с my.telegram.org
-  и интерактивный вход по телефону/2FA при первом запуске)
+- для настоящей соцсети — тот же паттерн, три легитимных варианта в
+  `lead-finder-v3/parsers/` (все — официальные API, не скрейпинг):
+  - **Telegram** — `telegram-parser.ts`'s `parseChannel()`, нужен свой
+    `TG_API_ID`/`TG_API_HASH` с my.telegram.org и интерактивный вход по
+    телефону/2FA при первом запуске
+  - **YouTube** — `parsers/youtube.ts`'s `parseYouTube()`, официальный
+    YouTube Data API v3, нужен только `YT_API_KEY` из Google Cloud Console
+  - **Reddit** — `parsers/reddit.ts`'s `parseReddit()`, официальный Reddit
+    API через OAuth "script"-приложение (`reddit.com/prefs/apps`)
+
+  Живьём на воркшопе не демонстрируем ни один (личные credentials +
+  вход — не для сцены), но код рабочий, тот же `ParseResult`-формат, что и
+  у портала — просто подставляешь свой источник в `pickComments()`.
 
 **Про routing/failover между провайдерами:** отдельного задания на это нет —
 вы уже видите его в деле здесь. `pickModel()` внутри использует Kitana

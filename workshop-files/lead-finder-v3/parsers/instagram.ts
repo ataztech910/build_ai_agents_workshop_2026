@@ -1,20 +1,20 @@
 /**
  * parsers/instagram.ts
- * Парсер комментариев Instagram через Playwright
+ * Parses Instagram comments via Playwright
  *
- * Стратегия: перехватываем GraphQL запросы пока браузер скроллит комментарии.
- * Instagram в 2026 требует сессию для большинства запросов — поэтому
- * при первом запуске логинимся и сохраняем cookies в instagram_session.json.
+ * Strategy: intercept GraphQL requests while the browser scrolls comments.
+ * As of 2026 Instagram requires a session for most requests — so on the
+ * first run we log in and save cookies to instagram_session.json.
  *
- * Установка:
+ * Install:
  *   npm install playwright playwright-extra puppeteer-extra-plugin-stealth
  *   npx playwright install chromium
  *
- * .env переменные:
- *   IG_USERNAME=твой_логин
- *   IG_PASSWORD=твой_пароль
+ * .env vars:
+ *   IG_USERNAME=your_login
+ *   IG_PASSWORD=your_password
  *   IG_POST_URL=https://www.instagram.com/p/SHORT_CODE/
- *   IG_HEADLESS=true   (false — видно браузер, удобно для отладки)
+ *   IG_HEADLESS=true   (false — shows the browser, handy for debugging)
  */
 
 import { chromium, type Page, type BrowserContext } from "playwright";
@@ -24,7 +24,7 @@ import type { Comment, ParseResult } from "./types.js";
 
 const SESSION_FILE = "instagram_session.json";
 
-// ─── Типы GraphQL ответа Instagram ───────────────────────────────────────────
+// ─── Instagram GraphQL response types ───────────────────────────────────────
 
 interface IGEdge<T> {
   node: T;
@@ -47,51 +47,51 @@ interface IGCommentsPage {
   count?: number;
 }
 
-// ─── Авторизация ──────────────────────────────────────────────────────────────
+// ─── Authorization ────────────────────────────────────────────────────────────
 
 async function login(context: BrowserContext, username: string, password: string) {
-  console.log("   🔐 Логинимся в Instagram...");
+  console.log("   🔐 Logging into Instagram...");
   const page = await context.newPage();
 
   await page.goto("https://www.instagram.com/accounts/login/", {
     waitUntil: "networkidle",
   });
 
-  // Принимаем cookies если появился диалог
+  // Accept cookies if a dialog shows up
   try {
-    await page.getByRole("button", { name: /allow|accept|разрешить/i })
+    await page.getByRole("button", { name: /allow|accept/i })
       .first()
       .click({ timeout: 3000 });
-  } catch { /* нет диалога — ок */ }
+  } catch { /* no dialog — fine */ }
 
   await page.locator('input[name="username"]').fill(username);
   await page.locator('input[name="password"]').fill(password);
 
-  await sleep(500 + Math.random() * 500); // человеческая пауза
+  await sleep(500 + Math.random() * 500); // human-like pause
 
   await page.locator('button[type="submit"]').click();
   await page.waitForURL(/instagram\.com\/?$|instagram\.com\/accounts\/onetap/, {
     timeout: 15_000,
   });
 
-  // Сохраняем cookies
+  // Save cookies
   const cookies = await context.cookies();
   writeFileSync(SESSION_FILE, JSON.stringify(cookies, null, 2));
-  console.log("   ✅ Сессия сохранена в", SESSION_FILE);
+  console.log("   ✅ Session saved to", SESSION_FILE);
 
   await page.close();
 }
 
-// ─── Скроллинг и перехват GraphQL ────────────────────────────────────────────
+// ─── Scrolling and GraphQL interception ──────────────────────────────────────
 
 async function scrapeComments(
   page: Page,
   postUrl: string,
   limit: number
 ): Promise<Comment[]> {
-  const comments = new Map<string, Comment>(); // deduplicate по id
+  const comments = new Map<string, Comment>(); // dedupe by id
 
-  // Перехватываем все GraphQL ответы Instagram
+  // Intercept every Instagram GraphQL response
   page.on("response", async (response) => {
     const url = response.url();
     if (!url.includes("graphql/query") && !url.includes("api/v1/media")) return;
@@ -126,55 +126,55 @@ async function scrapeComments(
           profileUrl: `https://www.instagram.com/${node.owner.username}/`,
         });
       }
-    } catch { /* некоторые ответы не JSON */ }
+    } catch { /* some responses aren't JSON */ }
   });
 
-  // Открываем пост
+  // Open the post
   await page.goto(postUrl, { waitUntil: "domcontentloaded" });
   await sleep(2000);
 
-  // Закрываем уведомления если появились
+  // Dismiss notification prompts if they show up
   try {
-    await page.getByRole("button", { name: /not now|не сейчас/i })
+    await page.getByRole("button", { name: /not now/i })
       .first()
       .click({ timeout: 2000 });
-  } catch { /* нет попапа — ок */ }
+  } catch { /* no popup — fine */ }
 
-  // Нажимаем "Посмотреть все комментарии" если есть
+  // Click "View all comments" if present
   try {
-    const viewAll = page.getByText(/view all \d+ comments|посмотреть все/i).first();
+    const viewAll = page.getByText(/view all \d+ comments/i).first();
     await viewAll.click({ timeout: 3000 });
     await sleep(1500);
-  } catch { /* комментарии уже открыты */ }
+  } catch { /* comments already open */ }
 
-  // Скроллим комментарии пока не наберём достаточно
+  // Scroll comments until we've collected enough
   let scrollAttempts = 0;
   const maxScrolls = Math.ceil(limit / 12) + 3;
 
   while (comments.size < limit && scrollAttempts < maxScrolls) {
-    // Ищем кнопку "Load more comments"
+    // Look for a "Load more comments" button
     try {
       const loadMore = page
-        .getByRole("button", { name: /load more|ещё комментарии|загрузить ещё/i })
+        .getByRole("button", { name: /load more/i })
         .first();
       await loadMore.click({ timeout: 2000 });
     } catch {
-      // Скроллим вниз чтобы триггернуть подгрузку
+      // Scroll down to trigger loading more
       await page.evaluate(() =>
         document.querySelector('[role="dialog"]')?.scrollBy(0, 800) ??
         window.scrollBy(0, 800)
       );
     }
 
-    await sleep(1200 + Math.random() * 800); // имитируем человека
+    await sleep(1200 + Math.random() * 800); // mimic a human
     scrollAttempts++;
-    process.stdout.write(`   Комментариев: ${comments.size}...\r`);
+    process.stdout.write(`   Comments: ${comments.size}...\r`);
   }
 
   return Array.from(comments.values()).slice(0, limit);
 }
 
-// ─── Главная функция ──────────────────────────────────────────────────────────
+// ─── Main function ─────────────────────────────────────────────────────────
 
 export async function parseInstagram(
   postUrl: string,
@@ -184,10 +184,10 @@ export async function parseInstagram(
 ): Promise<ParseResult> {
   const { limit = 50, headless = true } = options;
 
-  console.log(`\n📸 Instagram парсер → ${postUrl}`);
-  console.log(`   Режим: ${headless ? "headless" : "с браузером"}`);
+  console.log(`\n📸 Instagram parser → ${postUrl}`);
+  console.log(`   Mode: ${headless ? "headless" : "with browser"}`);
 
-  // playwright-extra + stealth для обхода детекции
+  // playwright-extra + stealth to dodge detection
   let browser;
   try {
     const { chromium: chromiumExtra } = await import("playwright-extra");
@@ -195,8 +195,8 @@ export async function parseInstagram(
     chromiumExtra.use(StealthPlugin.default());
     browser = await (chromiumExtra as typeof chromium).launch({ headless });
   } catch {
-    // Fallback: обычный playwright без stealth
-    console.log("   ⚠️  playwright-extra не найден, запуск без stealth");
+    // Fallback: plain playwright without stealth
+    console.log("   ⚠️  playwright-extra not found, running without stealth");
     browser = await chromium.launch({ headless });
   }
 
@@ -206,16 +206,16 @@ export async function parseInstagram(
       "AppleWebKit/537.36 (KHTML, like Gecko) " +
       "Chrome/126.0.0.0 Safari/537.36",
     viewport: { width: 1280, height: 900 },
-    locale: "ru-RU",
+    locale: "en-US",
   });
 
-  // Загружаем сохранённую сессию
+  // Load a saved session
   if (existsSync(SESSION_FILE)) {
-    console.log("   📂 Загружаем сохранённую сессию...");
+    console.log("   📂 Loading saved session...");
     const cookies = JSON.parse(readFileSync(SESSION_FILE, "utf-8"));
     await context.addCookies(cookies);
   } else {
-    // Первый запуск — логинимся
+    // First run — log in
     await login(context, username, password);
   }
 
@@ -224,9 +224,9 @@ export async function parseInstagram(
     const comments = await scrapeComments(page, postUrl, limit);
     await browser.close();
 
-    console.log(`\n   ✅ Собрано ${comments.length} комментариев`);
+    console.log(`\n   ✅ Collected ${comments.length} comments`);
 
-    // Достаём название поста из URL (short code)
+    // Pull the post's short code out of the URL
     const shortCode = postUrl.match(/\/p\/([^/]+)/)?.[1] ?? "unknown";
 
     return {

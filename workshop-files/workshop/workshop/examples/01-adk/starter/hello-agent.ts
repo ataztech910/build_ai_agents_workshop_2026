@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 config({ path: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", ".env") });
 
 // Pick a model — uncomment ONE of the two lines below.
-const model = "gemini-flash-latest"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
+const model = "gemini-3.6-flash"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
 // const model = new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }); // Kitana — no API key, uses your Claude CLI subscription or Ollama
 
 // export is required for `npx adk run <file>` and `npx adk web` (adk-devtools

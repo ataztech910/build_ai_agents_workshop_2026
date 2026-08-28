@@ -1,9 +1,9 @@
 /**
  * Lead Finder Pipeline v2
- * Воркшоп: мультиагентный поиск клиентов — 5 соцсетей + Claude Agent SDK
+ * Workshop: multi-agent lead finder — 5 social platforms + Claude Agent SDK
  *
- * Запуск:
- *   cp .env.example .env   → выбери SOURCE и заполни нужные ключи
+ * Run:
+ *   cp .env.example .env   → pick a SOURCE and fill in the needed keys
  *   npm start
  */
 
@@ -13,20 +13,20 @@ import { runParser } from "./parsers/index.js";
 import type { ParseResult } from "./parsers/index.js";
 import { writeFileSync } from "node:fs";
 
-// ─── ICP — меняй под свой продукт ─────────────────────────────────────────
+// ─── ICP — adapt to your own product ───────────────────────────────────────
 
 const ICP = `
-  Мы продаём курс по автоматизации бизнеса с помощью ИИ.
-  Идеальный клиент:
-  - Владелец малого/среднего бизнеса или фрилансер
-  - Жалуется на рутину, нехватку времени, хочет масштабироваться
-  - Интересуется технологиями, но не является разработчиком
-  - Задаёт вопросы, активно обсуждает
+  We sell a course on automating business operations with AI.
+  Ideal customer:
+  - Small/medium business owner or freelancer
+  - Complains about routine work, lack of time, wants to scale
+  - Interested in technology, but not a developer
+  - Asks questions, actively engages in discussion
 `;
 
-const OFFER_TONE = process.env.OFFER_TONE ?? "дружелюбный";
+const OFFER_TONE = process.env.OFFER_TONE ?? "friendly";
 
-// ─── Утилита: запуск Claude агента ────────────────────────────────────────
+// ─── Utility: run a Claude agent ────────────────────────────────────────────
 
 async function runAgent(name: string, prompt: string, systemPrompt: string): Promise<string> {
   console.log(`\n${"─".repeat(54)}`);
@@ -51,21 +51,21 @@ async function runAgent(name: string, prompt: string, systemPrompt: string): Pro
         }
       }
     }
-    if (msg.type === "result") console.log(`\n\n✅ ${name} завершил`);
+    if (msg.type === "result") console.log(`\n\n✅ ${name} finished`);
   }
 
   return result;
 }
 
-// ─── Шаг 2: Агент-аналитик ────────────────────────────────────────────────
+// ─── Step 2: Lead analyst agent ─────────────────────────────────────────────
 
 async function stepAnalyze(parsed: ParseResult): Promise<string> {
   const platformLabel: Record<string, string> = {
-    telegram: "Telegram канал",
-    youtube:  "YouTube видео",
-    reddit:   "Reddit сабреддит",
-    twitter:  "X/Twitter поиск",
-    instagram: "Instagram пост",
+    telegram: "Telegram channel",
+    youtube:  "YouTube video",
+    reddit:   "Reddit subreddit",
+    twitter:  "X/Twitter search",
+    instagram: "Instagram post",
   };
 
   const digest = parsed.comments
@@ -73,39 +73,39 @@ async function stepAnalyze(parsed: ParseResult): Promise<string> {
     .join("\n");
 
   return runAgent(
-    "Аналитик лидов",
+    "Lead analyst",
     `
-      Источник: ${platformLabel[parsed.platform] ?? parsed.platform} — ${parsed.title}
-      Комментариев проанализировано: ${parsed.totalComments}
+      Source: ${platformLabel[parsed.platform] ?? parsed.platform} — ${parsed.title}
+      Comments analyzed: ${parsed.totalComments}
 
-      ICP (идеальный клиент):
+      ICP (ideal customer):
       ${ICP}
 
-      Комментарии:
+      Comments:
       ${digest}
 
-      Выбери топ-5 потенциальных клиентов.
+      Pick the top 5 potential leads.
     `,
     `
-      Ты агент-аналитик лидов. Оцениваешь комментарии из соцсетей
-      и находишь людей, максимально совпадающих с ICP.
+      You are a lead-analyst agent. You evaluate social media comments
+      and find people who best match the ICP.
 
-      Критерии оценки (1–10):
-      - Релевантность: боли и интересы совпадают с ICP
-      - Намерение: вопросы о ценах, сроках, "как начать"
-      - Активность: глубина и количество комментариев
+      Scoring criteria (1–10):
+      - Relevance: pain points and interests match the ICP
+      - Intent: questions about pricing, timelines, "how do I get started"
+      - Activity: depth and volume of comments
 
-      Отвечай ТОЛЬКО валидным JSON, без лишнего текста:
+      Respond with ONLY valid JSON, no extra text:
       {
         "top_leads": [
           {
-            "author": "имя",
-            "username": "@handle или null",
+            "author": "name",
+            "username": "@handle or null",
             "score": 8,
-            "reason": "почему подходит (1–2 предложения)",
-            "pain_points": ["боль 1", "боль 2"],
-            "key_quote": "дословная цитата из комментария",
-            "contact_url": "ссылка на профиль или null"
+            "reason": "why they fit (1–2 sentences)",
+            "pain_points": ["pain 1", "pain 2"],
+            "key_quote": "verbatim quote from the comment",
+            "contact_url": "profile link or null"
           }
         ]
       }
@@ -113,34 +113,34 @@ async function stepAnalyze(parsed: ParseResult): Promise<string> {
   );
 }
 
-// ─── Шаг 3: Агент-копирайтер ──────────────────────────────────────────────
+// ─── Step 3: Copywriter agent ───────────────────────────────────────────────
 
 async function stepCopywrite(leadsJson: string): Promise<string> {
   return runAgent(
-    "Копирайтер",
-    `Напиши персональный оффер для каждого лида.\nДанные лидов:\n${leadsJson}`,
+    "Copywriter",
+    `Write a personalized offer for each lead.\nLead data:\n${leadsJson}`,
     `
-      Ты агент-копирайтер. Пишешь персональные офферы для потенциальных клиентов.
+      You are a copywriter agent. You write personalized offers for potential customers.
 
-      Правила:
-      - Цитируй key_quote — покажи что читал их слова
-      - Сначала боль, потом решение, никакого "хочу предложить"
-      - Тон: ${OFFER_TONE}
-      - Длина: 3–4 предложения
-      - Адаптируй стиль к платформе: в Telegram и Instagram — неформально,
-        в LinkedIn и Reddit — профессиональнее
+      Rules:
+      - Quote key_quote — show you actually read their words
+      - Pain first, then the solution — never "I'd like to offer"
+      - Tone: ${OFFER_TONE}
+      - Length: 3–4 sentences
+      - Adapt style to the platform: casual on Telegram and Instagram,
+        more professional on LinkedIn and Reddit
 
-      Отвечай ТОЛЬКО валидным JSON:
+      Respond with ONLY valid JSON:
       {
         "offers": [
           {
-            "author": "имя",
-            "username": "@handle или null",
-            "contact_url": "ссылка",
+            "author": "name",
+            "username": "@handle or null",
+            "contact_url": "link",
             "platform": "telegram/youtube/...",
-            "hook": "первая фраза-зацепка",
-            "message": "полный текст оффера",
-            "cta": "призыв к действию"
+            "hook": "opening hook line",
+            "message": "full offer text",
+            "cta": "call to action"
           }
         ]
       }
@@ -148,7 +148,7 @@ async function stepCopywrite(leadsJson: string): Promise<string> {
   );
 }
 
-// ─── Финальный вывод ──────────────────────────────────────────────────────
+// ─── Final output ────────────────────────────────────────────────────────────
 
 interface Offer {
   author: string;
@@ -162,7 +162,7 @@ interface Offer {
 
 function printReport(data: { offers: Offer[] }): void {
   console.log("\n" + "═".repeat(60));
-  console.log("  📋 ПЕРСОНАЛЬНЫЕ ОФФЕРЫ");
+  console.log("  📋 PERSONALIZED OFFERS");
   console.log("═".repeat(60));
 
   data.offers.forEach((o, i) => {
@@ -179,34 +179,34 @@ function printReport(data: { offers: Offer[] }): void {
 
 function extractJSON(text: string): unknown {
   const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error("JSON не найден в ответе агента");
+  if (!m) throw new Error("No JSON found in the agent's response");
   return JSON.parse(m[0]);
 }
 
-// ─── Главный пайплайн ─────────────────────────────────────────────────────
+// ─── Main pipeline ───────────────────────────────────────────────────────────
 
 async function main() {
   const source = process.env.SOURCE ?? "telegram";
-  console.log(`\n🚀 Lead Finder  |  источник: ${source.toUpperCase()}  |  тон: ${OFFER_TONE}`);
+  console.log(`\n🚀 Lead Finder  |  source: ${source.toUpperCase()}  |  tone: ${OFFER_TONE}`);
 
-  // 1. Парсим
+  // 1. Parse
   const parsed = await runParser();
 
-  // 2. Анализируем
+  // 2. Analyze
   const leadsRaw   = await stepAnalyze(parsed);
   const leadsData  = extractJSON(leadsRaw);
 
-  // 3. Офферы
+  // 3. Offers
   const offersRaw  = await stepCopywrite(leadsRaw);
   const offersData = extractJSON(offersRaw) as { offers: Offer[] };
 
-  // Вывод
+  // Print
   printReport(offersData);
 
-  // Сохраняем
+  // Save
   const file = `leads_${source}_${Date.now()}.json`;
   writeFileSync(file, JSON.stringify({ source, parsed, leads: leadsData, offers: offersData }, null, 2));
-  console.log(`\n💾 Сохранено: ${file}`);
+  console.log(`\n💾 Saved: ${file}`);
 }
 
 main().catch((e) => {

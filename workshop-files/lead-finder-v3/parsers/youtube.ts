@@ -1,15 +1,15 @@
 /**
  * parsers/youtube.ts
- * Парсер комментариев YouTube через YouTube Data API v3
+ * Parses YouTube comments via the YouTube Data API v3
  *
- * Как получить API ключ (бесплатно):
- *   1. https://console.cloud.google.com → создай проект
+ * How to get an API key (free):
+ *   1. https://console.cloud.google.com → create a project
  *   2. APIs & Services → Enable APIs → YouTube Data API v3
  *   3. Credentials → Create Credentials → API Key
  *
- * .env переменные:
+ * .env vars:
  *   YT_API_KEY=AIza...
- *   YT_VIDEO_ID=dQw4w9WgXcQ   (ID видео из URL: youtube.com/watch?v=ID)
+ *   YT_VIDEO_ID=dQw4w9WgXcQ   (video ID from the URL: youtube.com/watch?v=ID)
  */
 
 import type { Comment, ParseResult } from "./types.js";
@@ -52,9 +52,9 @@ export async function parseYouTube(
   apiKey: string,
   limit = 100
 ): Promise<ParseResult> {
-  console.log(`\n📺 YouTube парсер → видео: ${videoId}`);
+  console.log(`\n📺 YouTube parser → video: ${videoId}`);
 
-  // Получаем название видео
+  // Fetch the video title
   const videoInfo = await fetchJSON<YTVideoResponse>(
     `${BASE}/videos?part=snippet&id=${videoId}&key=${apiKey}`
   );
@@ -98,12 +98,12 @@ export async function parseYouTube(
     pageToken = data.nextPageToken;
     if (!pageToken) break;
 
-    // Пауза чтобы не бить rate limit
+    // Pause to avoid hitting the rate limit
     await new Promise((r) => setTimeout(r, 200));
-    process.stdout.write(`   Загружено: ${comments.length}...\r`);
+    process.stdout.write(`   Loaded: ${comments.length}...\r`);
   }
 
-  console.log(`\n   ✅ Собрано ${comments.length} комментариев`);
+  console.log(`\n   ✅ Collected ${comments.length} comments`);
 
   return {
     platform:      "youtube",

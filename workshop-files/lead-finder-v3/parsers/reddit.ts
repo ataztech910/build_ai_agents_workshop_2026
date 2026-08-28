@@ -1,19 +1,19 @@
 /**
  * parsers/reddit.ts
- * Парсер комментариев Reddit через snoowrap
+ * Parses Reddit comments via snoowrap
  *
- * Как получить credentials (бесплатно):
+ * How to get credentials (free):
  *   1. https://www.reddit.com/prefs/apps → "create another app"
- *   2. Тип: "script"
+ *   2. Type: "script"
  *   3. redirect uri: http://localhost
- *   4. Получишь client_id (под названием приложения) и client_secret
+ *   4. You'll get a client_id (under the app's name) and client_secret
  *
- * .env переменные:
+ * .env vars:
  *   REDDIT_CLIENT_ID=...
  *   REDDIT_CLIENT_SECRET=...
- *   REDDIT_USERNAME=твой_логин
- *   REDDIT_PASSWORD=твой_пароль
- *   REDDIT_SUBREDDIT=MachineLearning   (без r/)
+ *   REDDIT_USERNAME=your_login
+ *   REDDIT_PASSWORD=your_password
+ *   REDDIT_SUBREDDIT=MachineLearning   (without r/)
  */
 
 import Snoowrap from "snoowrap";
@@ -29,7 +29,7 @@ export async function parseReddit(
 ): Promise<ParseResult> {
   const { postsLimit = 10, commentsPerPost = 20 } = options;
 
-  console.log(`\n🤖 Reddit парсер → r/${subreddit}`);
+  console.log(`\n🤖 Reddit parser → r/${subreddit}`);
 
   const r = new Snoowrap({
     userAgent: `lead-finder-workshop/1.0 by u/${username}`,
@@ -39,12 +39,12 @@ export async function parseReddit(
     password,
   });
 
-  // Берём топ-посты за неделю
+  // Fetch the top posts of the week
   const posts = await r
     .getSubreddit(subreddit)
     .getTop({ time: "week", limit: postsLimit });
 
-  console.log(`   📋 Загружено ${posts.length} постов, собираем комментарии...`);
+  console.log(`   📋 Loaded ${posts.length} posts, collecting comments...`);
 
   const comments: Comment[] = [];
 
@@ -52,11 +52,11 @@ export async function parseReddit(
     const postUrl = `https://reddit.com${post.permalink}`;
 
     try {
-      // Разворачиваем ветку комментариев (глубина 2, не бесконечно)
+      // Expand the comment thread (depth 2, not unlimited)
       const expanded = await post.expandReplies({ limit: commentsPerPost, depth: 1 });
 
       for (const c of expanded.comments.slice(0, commentsPerPost)) {
-        // Snoowrap возвращает Comment | MoreComments — фильтруем
+        // Snoowrap returns Comment | MoreComments — filter it
         if (!("body" in c) || !c.body || c.body === "[deleted]") continue;
 
         const author = c.author as { name?: string } | string;
@@ -76,19 +76,19 @@ export async function parseReddit(
         });
       }
     } catch {
-      // Некоторые посты могут быть заблокированы
+      // Some posts may be locked
     }
 
-    process.stdout.write(`   Комментариев: ${comments.length}...\r`);
+    process.stdout.write(`   Comments: ${comments.length}...\r`);
     await new Promise((r) => setTimeout(r, 500)); // Rate limit
   }
 
-  console.log(`\n   ✅ Собрано ${comments.length} комментариев`);
+  console.log(`\n   ✅ Collected ${comments.length} comments`);
 
   return {
     platform:      "reddit",
     source:        `https://reddit.com/r/${subreddit}`,
-    title:         `r/${subreddit} — топ недели`,
+    title:         `r/${subreddit} — top of the week`,
     totalComments: comments.length,
     comments,
     parsedAt:      new Date().toISOString(),

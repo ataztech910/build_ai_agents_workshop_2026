@@ -21,7 +21,7 @@ const topic = process.argv[2] ?? "quantum computers";
 // sub-agent calls pickModel() separately and gets its own instance —
 // KitanaLlm/BaseLlm isn't shared between agents.
 function pickModel() {
-  return "gemini-flash-latest"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
+  return "gemini-3.6-flash"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
   // return new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }); // Kitana — no API key, uses your Claude CLI subscription or Ollama
 }
 

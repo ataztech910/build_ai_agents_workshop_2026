@@ -1,0 +1,5 @@
+.env
+.telegram_session
+instagram_session.json
+leads_*.json
+node_modules/
