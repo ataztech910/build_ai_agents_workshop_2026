@@ -1,48 +1,48 @@
-# Block 4 — Свой агент
+# Block 4 — Build your own agent
 
-> ~20 минут · 15 мин пишешь, 5 мин показываем
-
----
-
-## 4.1 Напиши агента под свою задачу
-
-**Задание (одна фраза):**
-
-> Возьми задачу из своей работы, которую делаешь руками. Напиши агента. 15 минут.
+> ~20 min · 15 min writing, 5 min showing
 
 ---
 
-**Как выбрать задачу:**
+## 4.1 Write an agent for your own task
 
-- Повторяющаяся, не разовая
-- Есть чёткий вход и ожидаемый выход
-- Достаточно узкая, чтобы уместиться в 15 минут
+**Assignment (one sentence):**
 
-Застрял с выбором? Ответь на вопрос: *"Три вещи, которые я делаю руками каждую неделю и ненавижу."*
-Выбери одну из них.
+> Take a task from your own work that you currently do by hand. Write an agent for it. 15 minutes.
 
 ---
 
-**Что уже есть в арсенале:**
+**How to pick a task:**
 
-- `LlmAgent` — модель + инструкция (достаточно для большинства задач)
-- `FunctionTool` — если агенту нужен внешний инструмент
-- `SequentialAgent` — если задача делится на понятные шаги
+- Repeating, not a one-off
+- Has a clear input and expected output
+- Narrow enough to fit in 15 minutes
 
-**Стартовая точка:** скопируй `examples/01-adk/starter/hello-agent.ts` или `tool-agent.ts` как основу и меняй под себя.
+Stuck on what to pick? Answer this: *"Three things I do by hand every week and hate doing."*
+Pick one of them.
+
+---
+
+**What's already in your toolkit:**
+
+- `LlmAgent` — model + instruction (enough for most tasks)
+- `FunctionTool` — if the agent needs an external tool
+- `SequentialAgent` — if the task splits into clear steps
+
+**Starting point:** copy `examples/01-adk/starter/hello-agent.ts` or `tool-agent.ts` as a base and adapt it.
 
 ```bash
 cp examples/01-adk/starter/hello-agent.ts examples/my-agent.ts
 npx tsx examples/my-agent.ts
 ```
 
-`pickModel()` toggle работает так же, как везде — одна строка чтобы переключить провайдера.
+The `pickModel()` toggle works the same as everywhere else — one line to switch providers.
 
 ---
 
-**Результат:** работающий агент на твоей реальной задаче. Не идеальный — работающий.
+**Result:** a working agent for your real task. Not perfect — working.
 
 ---
 
-**✋ Check-in (5 мин):** 2–3 человека показывают что получилось — вживую, свой терминал или `adk web`.
-Не про идеальный код — получилось ли автоматизировать реальный кусок своей работы?
+**✋ Check-in (5 min):** 2-3 people show what they got — live, their own terminal or `adk web`.
+Not about perfect code — did you manage to automate a real piece of your work?

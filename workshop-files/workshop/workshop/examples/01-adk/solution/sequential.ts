@@ -12,9 +12,11 @@ config({ path: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "
 
 const topic = process.argv[2] ?? "quantum computers";
 
-const modelEnv = process.env.MODEL;
+// Pick a model — uncomment ONE of the two return statements below. Each
+// sub-agent calls pickModel() separately and gets its own instance.
 function pickModel() {
-  return modelEnv === "kitana" ? new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }) : modelEnv || "gemini-3.6-flash";
+  return "gemini-3.6-flash"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
+  // return new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }); // Kitana — no API key, uses your Claude CLI subscription or Ollama
 }
 
 const researcher = new LlmAgent({

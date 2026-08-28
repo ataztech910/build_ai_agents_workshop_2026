@@ -11,9 +11,9 @@ import { fileURLToPath } from "node:url";
 
 config({ path: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", ".env") });
 
-const modelEnv = process.env.MODEL;
-const model =
-  modelEnv === "kitana" ? new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }) : modelEnv || "gemini-3.6-flash";
+// Pick a model — uncomment ONE of the two lines below.
+const model = "gemini-3.6-flash"; // ADK default — needs GOOGLE_GENAI_API_KEY in .env
+// const model = new KitanaLlm({ model: "auto", models: { ollama: process.env.OLLAMA_MODEL } }); // Kitana — no API key, uses your Claude CLI subscription or Ollama
 
 export const agent = new LlmAgent({
   name: "hello",

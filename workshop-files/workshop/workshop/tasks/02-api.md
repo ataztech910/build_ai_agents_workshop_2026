@@ -1,114 +1,122 @@
 
-# Волна 2 — ADK + API
+# Block 3 — Lead Finder
 
-> ~35 минут · подключаем реальные данные, не только заглушки
-
----
-
-## Идея этой волны
-
-**Это не про то, какая LLM отвечает** — модель/провайдер вы уже переключаете
-в блоке 1 через `pickModel()` (Gemini/Kitana toggle), это работает и здесь.
-
-**Это про то, как затащить РЕАЛЬНЫЕ данные из внешнего API в пайплайн** —
-вместо захардкоженного массива. `pickComments()` в скелете `lead-finder.ts` —
-тот же toggle-паттерн, что и `pickModel()`, только переключает источник
-данных, а не модель:
-
-- по умолчанию — `FAKE_COMMENTS`, ничего настраивать не нужно
-- раскомментируй вариант с `fetch(DATA_PORTAL_URL + ...)` — тянешь реальные
-  данные с учебного портала (`workshop-data-portal.vercel.app`), без логина
-  и ключей, тот же формат ответа, что вернул бы настоящий парсер
-- для настоящей соцсети — тот же паттерн, три легитимных варианта в
-  `lead-finder-v3/parsers/` (все — официальные API, не скрейпинг):
-  - **Telegram** — `telegram-parser.ts`'s `parseChannel()`, нужен свой
-    `TG_API_ID`/`TG_API_HASH` с my.telegram.org и интерактивный вход по
-    телефону/2FA при первом запуске
-  - **YouTube** — `parsers/youtube.ts`'s `parseYouTube()`, официальный
-    YouTube Data API v3, нужен только `YT_API_KEY` из Google Cloud Console
-  - **Reddit** — `parsers/reddit.ts`'s `parseReddit()`, официальный Reddit
-    API через OAuth "script"-приложение (`reddit.com/prefs/apps`)
-
-  Живьём на воркшопе не демонстрируем ни один (личные credentials +
-  вход — не для сцены), но код рабочий, тот же `ParseResult`-формат, что и
-  у портала — просто подставляешь свой источник в `pickComments()`.
-
-**Про routing/failover между провайдерами:** отдельного задания на это нет —
-вы уже видите его в деле здесь. `pickModel()` внутри использует Kitana
-(`chain`), и если один провайдер падает (например claude по таймауту на
-третьем агенте), роутер сам переключается на следующий — без остановки
-пайплайна и без единой строчки кода на это с вашей стороны.
+> ~30 min · pulling in real data, not just a stub
 
 ---
 
-## Паттерн outputKey — как агенты передают данные друг другу
+## The idea behind this block
 
-В волне 1 `SequentialAgent` по умолчанию отдавал каждому следующему агенту
-**всю накопленную историю** — с ростом пайплайна промпт растёт и может не
-уложиться в таймаут провайдера (реально поймали это на Kitana с третьим агентом).
+**This isn't about which LLM answers** — you already switch model/provider
+in Block 1 via `pickModel()` (the Gemini/Kitana toggle), and it still works
+here.
 
-Скелет использует другой паттерн:
+**This is about getting REAL data from an external API into the pipeline**
+— instead of a hardcoded array. `pickComments()` in the `lead-finder.ts`
+skeleton is the same toggle pattern as `pickModel()`, just switching the
+data source instead of the model:
+
+- by default — `FAKE_COMMENTS`, nothing to configure
+- uncomment the `fetch(DATA_PORTAL_URL + ...)` variant — pulls real data
+  from the training portal (`workshop-data-portal.vercel.app`), no login or
+  keys, same response shape a real parser would return
+- for a real social platform — same pattern, three legitimate options in
+  `lead-finder-v3/parsers/` (all official APIs, not scraping):
+  - **Telegram** — `telegram-parser.ts`'s `parseChannel()`, needs your own
+    `TG_API_ID`/`TG_API_HASH` from my.telegram.org and an interactive
+    phone/2FA login on first run
+  - **YouTube** — `parsers/youtube.ts`'s `parseYouTube()`, the official
+    YouTube Data API v3, just needs a `YT_API_KEY` from Google Cloud Console
+  - **Reddit** — `parsers/reddit.ts`'s `parseReddit()`, the official Reddit
+    API via an OAuth "script" app (`reddit.com/prefs/apps`)
+
+  We don't demo any of these live at the workshop (personal credentials +
+  login isn't for the stage), but the code is real and working, same
+  `ParseResult` shape as the portal — just point `pickComments()` at your
+  own source.
+
+**About routing/failover between providers:** there's no separate task for
+this — you already see it in action here. `pickModel()` uses Kitana's
+`chain` under the hood, and if one provider fails (say Claude times out on
+the third agent), the router automatically switches to the next one — no
+pipeline interruption, no code on your end.
+
+---
+
+## The outputKey pattern — how agents hand data to each other
+
+In Block 1/2, `SequentialAgent` by default gives every next agent **the
+entire accumulated history** — as the pipeline grows the prompt grows with
+it, and can outrun a provider's timeout (we actually hit this on Kitana
+with the third agent).
+
+The skeleton uses a different pattern:
 
 ```text
-analyst   → outputKey: "topLeads"    сохраняет ответ в session.state["topLeads"]
-copywriter → instruction: "...{topLeads}..."   читает только нужное поле
-             includeContents: "none"  не получает всю историю диалога
-validator  → то же самое с {offers}
+analyst    → outputKey: "topLeads"     saves its answer to session.state["topLeads"]
+copywriter → instruction: "...{topLeads}..."   reads only the field it needs
+             includeContents: "none"   doesn't get the full conversation history
+validator  → same idea, with {offers}
 ```
 
-Конкретно: `{topLeads}` в тексте instruction — это не просто плейсхолдер.
-ADK подставляет в него значение `session.state["topLeads"]` перед каждым вызовом.
-Агент получает **только своё поле из state**, а не весь предыдущий диалог.
+Specifically: `{topLeads}` in the instruction text isn't just a
+placeholder. ADK substitutes it with the value of
+`session.state["topLeads"]` before every call. The agent gets **only its
+own field from state**, not the entire prior conversation.
 
-Это тот же контракт строгого JSON, что вы видели в 1.3 — только теперь между
-агентами через state, а не через прямую передачу текста.
+This is the same strict-JSON contract you saw in 1.3 — just now between
+agents via state, instead of raw text handoff.
 
 ---
 
-## Подготовка
+## Prep
 
 ```bash
-# Ключ нужен только если хотите гонять через реальный Gemini API вместо Kitana —
-# сам источник данных (FAKE_COMMENTS / портал / реальный парсер) от ключа не зависит.
-GOOGLE_GENAI_API_KEY=AIza...        # бесплатный: aistudio.google.com
+# A key is only needed if you want to run through the real Gemini API instead
+# of Kitana — the data source itself (FAKE_COMMENTS / portal / real parser)
+# doesn't depend on the key.
+GOOGLE_GENAI_API_KEY=AIza...        # free: aistudio.google.com
 ```
 
 ---
 
-## 2.1 Реальный кейс — Lead Finder пайплайн
+## 2.1 The real case — Lead Finder pipeline
 
-Открой `examples/02-api/starter/lead-finder.ts`.
+Open `examples/02-api/starter/lead-finder.ts`.
 
-### Шаг 1 — сначала сломай
+### Step 1 — break it first
 
-Добавь только `analyst` в `subAgents: [analyst]` и запусти с пустой `instruction`.
-Посмотри что вернёт агент — скорее всего прозу, а не JSON. Пайплайн не дойдёт до конца:
+Add only `analyst` to `subAgents: [analyst]` and run with an empty
+`instruction`. See what the agent returns — most likely prose, not JSON.
+The pipeline won't reach the end:
 
 ```bash
 npx tsx examples/02-api/starter/lead-finder.ts
-# → [analyst] "Sure! Here are some leads..." (проза, не JSON)
+# → [analyst] "Sure! Here are some leads..." (prose, not JSON)
 # → ⚠️  Pipeline did not complete — last agent: "analyst", not validator
 ```
 
-### Шаг 2 — JSON контракт
+### Step 2 — the JSON contract
 
-Заполни `instruction` у аналитика с явным контрактом: `"return ONLY JSON: { top_leads: [...] }"`.
-Запусти снова — должен появиться чистый JSON вместо прозы.
+Fill in the analyst's `instruction` with an explicit contract:
+`"return ONLY JSON: { top_leads: [...] }"`. Run again — you should see
+clean JSON instead of prose.
 
-### Шаг 3 — полный пайплайн
+### Step 3 — the full pipeline
 
-1. Допиши `copywriter` и `validator` с их инструкциями
-2. Добавь всех трёх в `subAgents: [analyst, copywriter, validator]`
-3. Убедись что пайплайн доходит до конца и сохраняет `leads_result.json`
-4. Раскомментируй портал в `pickComments()` и запусти снова на реальных данных
+1. Write `copywriter` and `validator` with their instructions
+2. Add all three to `subAgents: [analyst, copywriter, validator]`
+3. Confirm the pipeline reaches the end and saves `leads_result.json`
+4. Uncomment the portal in `pickComments()` and run again on real data
 
-**Ориентир по инструкциям:**
+**Instruction reference:**
 
-- **Аналитик** — берёт ICP и список комментариев, возвращает `{ "top_leads": [{ "author", "username", "score", "reason", "key_quote" }] }`
-- **Копирайтер** — читает `{topLeads}` из state, пишет персональный оффер для каждого: `{ "offers": [{ "author", "message", "hook", "cta" }] }`
-- **Валидатор** — читает `{offers}`, отклоняет шаблонные и переписывает: тот же `{ "offers": [...] }` плюс опциональный `"rewrite_note"`
+- **analyst** — takes the ICP and a list of comments, returns `{ "top_leads": [{ "author", "username", "score", "reason", "key_quote" }] }`
+- **copywriter** — reads `{topLeads}` from state, writes a personalized offer for each: `{ "offers": [{ "author", "message", "hook", "cta" }] }`
+- **validator** — reads `{offers}`, rejects templated ones and rewrites them: same `{ "offers": [...] }` shape plus an optional `"rewrite_note"`
 
-**Результат:** три агента последовательно обрабатывают комментарии, на выходе — проверенные офферы.
+**Result:** three agents process the comments in sequence, ending in
+validated offers.
 
 ```bash
 npx tsx examples/02-api/starter/lead-finder.ts
@@ -118,13 +126,14 @@ npx tsx examples/02-api/starter/lead-finder.ts
 # → 💾 Saved: leads_result.json
 ```
 
-**Эксперимент:** поменяй `ICP` и запусти снова. Агент выберет других людей из тех же комментариев.
+**Experiment:** change the `ICP` and run again. The agent will pick
+different people out of the same comments.
 
-> **✋ Check-in:** у кого сохранился `leads_result.json`?
-> Если `⚠️ Pipeline did not complete` — скорее всего проблема в JSON-контракте одного из агентов.
+> **✋ Check-in:** who has `leads_result.json` saved?
+> If `⚠️ Pipeline did not complete` — most likely a JSON-contract problem in one of the agents.
 
-Скелет: `examples/02-api/starter/lead-finder.ts`
+Skeleton: `examples/02-api/starter/lead-finder.ts`
 
 ---
 
-→ Дальше: [tasks/03-closing.md](./03-closing.md) — финальное демо, реальные условия (n8n)
+→ Next: [tasks/04-own-agent.md](./04-own-agent.md) — Block 4, write your own agent

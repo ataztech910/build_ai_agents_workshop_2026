@@ -1,58 +1,58 @@
-# Воркшоп: ИИ агенты с нуля
+# Workshop: AI Agents from Scratch
 
-**Стек:** Google ADK → API провайдеры → Kitana SDK
-**Формат:** офлайн, ~2ч45, технари
+**Stack:** Google ADK → API providers → Kitana SDK
+**Format:** in-person, ~2h45, technical audience
 
 ---
 
-**Одна главная идея воркшопа:**
-> Агент = модель + инструкция + (опционально) инструменты.
-> Всё остальное — оркестрация: кто кому передаёт результат и в каком виде.
+**One core idea for the whole workshop:**
+> Agent = model + instruction + (optionally) tools.
+> Everything else is orchestration: who hands the result to whom, and in what shape.
 
-Эту мысль ты будешь видеть на каждом шаге — от hello-агента до трёхзвенного пайплайна.
+You'll see this idea at every step — from the hello-agent to a three-link pipeline.
 
 ---
 
 ```
-Вступление                  ~10 мин (ведущий)
-  Что такое агент, почему ADK, план воркшопа
+Intro                       ~10 min (presenter)
+  What an agent is, why ADK, workshop plan
 
-Block 1 — первый агент      ~25 мин
-  7 мин live-код (ведущий) + 18 мин участники пишут
-  LlmAgent → FunctionTool (задания 1.1 и 1.2)
+Block 1 — first agent       ~25 min
+  7 min live-coding (presenter) + 18 min participants write code
+  LlmAgent → FunctionTool (tasks 1.1 and 1.2)
 
-Block 2 — пайплайн         ~30 мин
-  10 мин эксперимент (один агент vs несколько) + 5 мин live-код + 15 мин участники
-  SequentialAgent, (бонус: ParallelAgent) (задания 1.3 и 1.4)
+Block 2 — pipeline          ~30 min
+  10 min experiment (one agent vs several) + 5 min live-coding + 15 min participants
+  SequentialAgent, (bonus: ParallelAgent) (tasks 1.3 and 1.4)
 
-  ── ПЕРЕРЫВ 25 минут ───────────────────────
+  ── BREAK 25 minutes ───────────────────────
 
-Block 3 — Lead Finder       ~30 мин
-  8 мин live-демо (ведущий) + 17 мин участники + 5 мин adk web
-  Реальные данные, три агента в пайплайне (задание 2.1)
+Block 3 — Lead Finder       ~30 min
+  8 min live demo (presenter) + 17 min participants + 5 min adk web
+  Real data, three agents in a pipeline (task 2.1)
 
-Block 4 — свой агент        ~20 мин
-  15 мин пишете с нуля + 5 мин показываем
-  Берёшь задачу из своей работы, пишешь агента сам (задание 4.1)
+Block 4 — your own agent    ~20 min
+  15 min writing from scratch + 5 min showing
 
-Закрытие                    ~25 мин (ведущий)
+Closing                     ~25 min (presenter)
   planner → data portal → lead-finder → n8n
-  Оркестрация через adk web's HTTP API, код не пишете
+  Orchestration via adk web's HTTP API, no code to write
 ```
 
-По ходу всех блоков модель можно переключать на Kitana — без единого API-ключа,
-через подписку Claude CLI или Ollama. В каждом скелете это одна строка:
-раскомментируй `KitanaLlm`-вариант вместо дефолтного Gemini.
+Throughout every block you can switch the model to Kitana — no API key at
+all, just a Claude CLI subscription or Ollama. It's one line in every
+skeleton: uncomment the `KitanaLlm` variant instead of the default Gemini.
 
 ---
 
-**Для фасилитаторов:** работайте «с хвоста» — пусть каждый идёт в своём темпе,
-а вы ходите по залу и догоняете отставших. Ориентир: 1 фасилитатор на ~7 участников.
-На каждом задании есть отметка ✋ — момент для короткого общего check-in.
+**For facilitators:** work from the back — let everyone go at their own
+pace, and walk the room catching up anyone who's stuck. Rule of thumb: 1
+facilitator per ~7 participants. Every task has a ✋ marker — a moment for
+a short group check-in.
 
 ---
 
-## Быстрый старт
+## Quick start
 
 ```bash
 git clone <repo> workshop && cd workshop
@@ -60,33 +60,33 @@ npm install
 cp .env.example .env
 ```
 
-Структура репо:
+Repo structure:
 
 ```
 tasks/
-  index.md          ← ты здесь
-  01-adk.md         ← Block 1 и Block 2 (задания 1.1–1.4)
-  02-api.md         ← Block 3 (задание 2.1)
-  04-own-agent.md   ← Block 4 (задание 4.1)
-  03-closing.md     ← Закрытие (n8n), код не пишете
+  index.md          ← you are here
+  01-adk.md         ← Block 1 and Block 2 (tasks 1.1-1.4)
+  02-api.md         ← Block 3 (task 2.1)
+  04-own-agent.md   ← Block 4 (task 4.1)
+  03-closing.md     ← Closing (n8n), no code to write
 examples/
   01-adk/
-    starter/        ← скелеты для Block 1 и 2 (пиши сюда)
-    solution/       ← готовые агенты для самопроверки
+    starter/        ← skeletons for Block 1 and 2 (write here)
+    solution/       ← finished agents for self-checking
   02-api/
-    starter/        ← скелеты для Block 3 (пиши сюда)
-    solution/       ← готовые агенты для самопроверки
+    starter/        ← skeletons for Block 3 (write here)
+    solution/       ← finished agents for self-checking
   03-closing/
-    planner.ts      ← Закрытие-демо, presenter-only, участники не пишут
+    planner.ts      ← Closing demo, presenter-only, participants don't write this
 ```
 
-## Правила
+## Rules
 
-- Пиши прямо в скелете, `examples/*/starter/ИМЯ_ФАЙЛА.ts` — заполняй TODO на месте
-- Смотри в `examples/*/solution/` только если завис больше 5 минут (или не хочешь решать сам)
-- Запуск всегда: `npx tsx examples/*/starter/ИМЯ_ФАЙЛА.ts`
-- Тот же файл открывается через `adk web examples/*/starter` — увидишь агента в браузере
+- Write directly in the skeleton, `examples/*/starter/FILE_NAME.ts` — fill in the TODOs in place
+- Only look at `examples/*/solution/` if you've been stuck for more than 5 minutes (or don't want to solve it yourself)
+- Always run with: `npx tsx examples/*/starter/FILE_NAME.ts`
+- The same file also opens via `adk web examples/*/starter` — see the agent in your browser
 
 ---
 
-→ Начинай с [tasks/01-adk.md](./01-adk.md)
+→ Start with [tasks/01-adk.md](./01-adk.md)

@@ -1,47 +1,47 @@
 # Closing — Real Conditions (n8n)
 
-> ~25-30 минут · демо ведущего, участники не пишут код
+> ~25-30 min · presenter demo, participants don't write code
 
-Финальный момент воркшопа: то, что вы построили сегодня, встраивается в
-настоящий процесс — не просто отвечает в чате, а работает как звенья
-автоматизации, которую оркеструет n8n.
+The final moment of the workshop: what you built today gets embedded into
+a real process — not just answering in a chat, but working as links in an
+automation chain orchestrated by n8n.
 
-Три звена, каждое — либо уже построено сегодня, либо строится один раз
-заранее (не на воркшопе):
+Three links, each either already built today or built once ahead of time
+(not during the workshop):
 
 ```
-[planner]  → решает, какой канал сканировать (новый агент, presenter-only)
+[planner]  → decides which channel to scan (new agent, presenter-only)
     ↓
-[data portal]  → отдаёт реальные комментарии из выбранного канала (Block 3)
+[data portal]  → returns real comments from the chosen channel (Block 3)
     ↓
-[lead-finder]  → analyst → copywriter → validator (Block 3, уже построен)
+[lead-finder]  → analyst → copywriter → validator (Block 3, already built)
     ↓
-[n8n: Split Out → Sort → Set]  → группирует и форматирует финальный список
+[n8n: Split Out → Sort → Set]  → groups and formats the final list
 ```
 
-`planner` и `lead-finder` — два независимых ADK-агента за двумя HTTP-
-эндпоинтами. n8n дёргает оба по очереди и обрабатывает результат между
-ними — ничего нового в TypeScript писать не нужно, вся оркестрация в n8n.
+`planner` and `lead-finder` are two independent ADK agents behind two HTTP
+endpoints. n8n calls both in sequence and processes the result between
+them — no new TypeScript to write, all orchestration lives in n8n.
 
 ---
 
-## Подготовка (до воркшопа, не при участниках)
+## Prep (before the workshop, not in front of participants)
 
-Два `adk web` сервера на разных портах — планировщик и Lead Finder живут в
-разных папках, `adk web` обслуживает только файлы на один уровень вложенности
-внутри указанной директории:
+Two `adk web` servers on different ports — the planner and Lead Finder
+live in different folders, and `adk web` only serves files one level deep
+inside the directory you point it at:
 
 ```bash
-# Терминал 1
+# Terminal 1
 npx adk web examples/03-closing --port 8001
 # → serves "planner"
 
-# Терминал 2
+# Terminal 2
 npx adk web examples/02-api/solution --port 8000
 # → serves "lead-finder"
 ```
 
-Проверка (замени `s1` на что угодно уникальное для сессии):
+Verify (swap `s1` for anything unique to the session):
 
 ```bash
 curl -X POST http://localhost:8001/apps/planner/users/u1/sessions/s1 -d '{}'
@@ -52,40 +52,42 @@ curl -X POST http://localhost:8001/run -H "Content-Type: application/json" -d '{
 # → {"channel": "smallbiz", "reason": "..."}
 ```
 
-`planner.ts` — presenter-only агент (не то, что строили участники): по
-описанию бизнеса выбирает один из трёх каналов учебного портала
-(`startups` / `smallbiz` / `productivity`). Тот же скелет, что и везде —
-`pickModel()` toggle, Gemini по умолчанию. См. `examples/03-closing/planner.ts`.
+`planner.ts` is a presenter-only agent (not something participants built):
+given a business description, it picks one of three channels on the
+training portal (`startups` / `smallbiz` / `productivity`). Same skeleton
+as everywhere else — `pickModel()` toggle, Gemini by default. See
+`examples/03-closing/planner.ts`.
 
-**n8n — без Docker, через npx:**
+**n8n — no Docker, via npx:**
 
 ```bash
 npx n8n
 # → http://localhost:5678
 ```
 
-**Импорт готового workflow** — не собирать 12 нод руками:
-`examples/03-closing/n8n-workflow.json` → в n8n: Workflows → Import from
-File → выбрать этот файл.
+**Import the ready-made workflow** — no need to wire up 12 nodes by hand:
+`examples/03-closing/n8n-workflow.json` → in n8n: Workflows → Import from
+File → pick this file.
 
-Проверено живьём целиком: `npx n8n import:workflow --input=...`, затем
-`npx n8n execute --id=workshop-closing-demo-001` — реальный прогон
-через оба `adk web` сервера и портал, дошёл до конца
-(`status: success`, `lastNodeExecuted: "Format Result"`), правильно
-отсортированные и отформатированные офферы на выходе. Один нюанс из
-этого прогона: экспортированный JSON изначально не проходил импорт без
-top-level `id` у самого workflow (не только у нод) — `SQLITE_CONSTRAINT:
-NOT NULL constraint failed: workflow_entity.id` — уже исправлено в файле.
+Verified live end to end: `npx n8n import:workflow --input=...`, then
+`npx n8n execute --id=workshop-closing-demo-001` — a real run through both
+`adk web` servers and the portal, reached the end
+(`status: success`, `lastNodeExecuted: "Format Result"`), correctly
+sorted and formatted offers on output. One gotcha from that run: the
+exported JSON initially failed to import without a top-level `id` on the
+workflow itself (not just on the nodes) — `SQLITE_CONSTRAINT:
+NOT NULL constraint failed: workflow_entity.id` — already fixed in the
+file.
 
 ---
 
-## Workflow в n8n — что делает каждая нода (если правишь импортированное, или собираешь руками)
+## The n8n workflow — what each node does (if you're editing the import, or building it by hand)
 
 **1. Manual Trigger** — "New business description"
 
 **2. Set — `businessDescription`**
-Текстовое поле с описанием бизнеса/ICP (то же, что участники используют в
-`lead-finder.ts`'s `ICP`), например:
+A text field with the business description/ICP (same idea as the `ICP`
+participants use in `lead-finder.ts`), e.g.:
 ```
 A course on automating business operations with AI, for small business
 owners drowning in manual admin work.
@@ -106,10 +108,10 @@ owners drowning in manual admin work.
 ```
 
 **5. Set/Code — extract `channel`**
-Ответ приходит как массив событий; текст — в
-`{{ $json[0].content.parts[0].text }}`, JSON-строкой (может быть в
-```json-обёртке — планировщик тоже иногда её добавляет, как и остальные
-агенты сегодня). Простое выражение вытащить `channel`:
+The response arrives as an array of events; the text is at
+`{{ $json[0].content.parts[0].text }}`, as a JSON string (may be wrapped
+in a ```json fence — the planner adds it sometimes too, same as every
+other agent today). Simple expression to pull out `channel`:
 ```js
 JSON.parse($json[0].content.parts[0].text.replace(/```json\n?|```/g, '')).channel
 ```
@@ -157,28 +159,28 @@ this demo: no live logins in front of the room).
 
 ---
 
-## Что показываем вживую (5 итоговых минут из 25-30)
+## What we show live (5 final minutes out of 25-30)
 
-1. Оба `adk web` сервера уже подняты и прогреты — открываешь n8n, жмёшь
+1. Both `adk web` servers are already up and warmed up — open n8n, click
    **Execute Workflow**
-2. Зал видит подсветку нод одна за другой: planner решает канал → портал
-   отдаёт данные → lead-finder гоняет 3 своих агента → n8n сортирует и
-   форматирует результат
-3. Показываешь итоговый список — те же самые механики, что участники
-   только что писали руками, теперь работают без единого клика человека
+2. The room watches the nodes light up one by one: planner picks a
+   channel → the portal returns data → lead-finder runs its 3 agents →
+   n8n sorts and formats the result
+3. Show the final list — the exact same mechanics participants just wrote
+   by hand, now running without a single human click
 
-**Фраза:** *"Ничего из этого не новый код — planner такой же LlmAgent, как
-и всё сегодня, lead-finder — то, что вы только что построили. Новое здесь —
-n8n, который дёргает оба агента по HTTP и обрабатывает результат между
-ними."*
+**Line to say:** *"None of this is new code — planner is the same
+`LlmAgent` as everything today, lead-finder is what you just built. What's
+new here is n8n, which calls both agents over HTTP and processes the
+result between them."*
 
-**Вопрос залу:** что бы вы автоматизировали первым, будь у вас такой
-пайплайн за HTTP-эндпоинтом?
+**Question for the room:** what would you automate first, if you had a
+pipeline like this behind an HTTP endpoint?
 
-## Быстрый круг (в оставшееся время)
+## Quick round (in whatever time is left)
 
-Один вопрос на человека, коротко: *"Что удивило?"*
+One question per person, short: *"What surprised you?"*
 
 ---
 
-→ Готово! Возвращаемся к общему обсуждению.
+→ Done! Back to the general discussion.
