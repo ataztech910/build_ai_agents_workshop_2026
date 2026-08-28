@@ -52,15 +52,7 @@ a short group check-in.
 
 ---
 
-## Quick start
-
-```bash
-git clone <repo> workshop && cd workshop
-npm install
-cp .env.example .env
-```
-
-Repo structure:
+## Repo structure:
 
 ```
 tasks/
